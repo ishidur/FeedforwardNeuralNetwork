@@ -8,8 +8,8 @@
 #include "targetver.h"
 
 #include <stdio.h>
+#include <math.h>
 #include <tchar.h>
-
 
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください
