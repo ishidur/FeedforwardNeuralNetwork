@@ -9,9 +9,12 @@
 #include <random>
 #include <fstream>
 #include <iomanip>
+#include <time.h>
 
+#define INITIAL_VAL 0.03
 #define LEARNING_RATE 0.7
 #define LEARNING_TIME 100000
+#define ERROR_BOTTOM 0.0001
 using namespace std;
 using namespace Eigen;
 
@@ -21,7 +24,7 @@ MatrixXd dataSet(4, 2);
 VectorXd teachSet(4);
 
 //Network structure. make sure layer number is equal to array number.
-array<int, 5> structure = {2, 2, 2, 2, 1};
+array<int, 4> structure = {2, 2, 2, 1};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
@@ -29,8 +32,8 @@ void initWeightsAndBiases()
 {
 	for (int i = 1; i < structure.size(); ++i)
 	{
-		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * 1.5);
-		biases.push_back(VectorXd::Random(structure[i]) * 1.5);
+		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * INITIAL_VAL);
+		biases.push_back(VectorXd::Random(structure[i]) * INITIAL_VAL);
 	}
 }
 
@@ -121,7 +124,7 @@ void test()
 	}
 }
 
-void learnProccess(VectorXd input, VectorXd teachData, ostream& out = cout)
+double learnProccess(VectorXd input, VectorXd teachData, ostream& out = cout)
 {
 	//	feedforward proccess
 	VectorXd output[structure.size()];
@@ -133,6 +136,7 @@ void learnProccess(VectorXd input, VectorXd teachData, ostream& out = cout)
 	}
 	//	backpropergation method
 	backpropergation(output, teachData);
+
 	for (int i = 0; i < structure.size() - 1; ++i)
 	{
 		for (int j = 0; j < weights[i].rows(); ++j)
@@ -147,7 +151,10 @@ void learnProccess(VectorXd input, VectorXd teachData, ostream& out = cout)
 			out << biases[i][j] << ", ";
 		}
 	}
-	out << validate() << endl;
+
+	double error = validate();
+	out << error << endl;
+	return error;
 }
 
 int main()
@@ -162,10 +169,13 @@ int main()
 		0;
 	random_device rnd;
 	mt19937 mt(rnd());
+	time_t epoch_time;
+	epoch_time = time(NULL);
+
 	initWeightsAndBiases();
 	int a[4] = {0};
 	string filename = "result-";
-	filename += to_string(structure.size()) + "-layers-";
+	filename += to_string(epoch_time) + to_string(structure.size()) + "-layers-";
 	for (int i = 0; i < structure.size(); ++i)
 	{
 		filename += to_string(structure[i]);
@@ -194,6 +204,8 @@ int main()
 	}
 	ofs << "error" << endl;
 	string progress = "";
+	double error = 1.0;
+	//	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
 	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
 		double status = double(i * 100.0 / (LEARNING_TIME - 1));
@@ -208,9 +220,11 @@ int main()
 		VectorXd input = dataSet.row(n);
 		VectorXd teach(1);
 		teach << teachSet[n];
-		learnProccess(input, teach, ofs);
+		error = learnProccess(input, teach, ofs);
+		//		error = learnProccess(input, teach);
 	}
 	cout << endl;
+	cout << error << endl;
 
 	for (int i = 0; i < 4; ++i)
 	{
