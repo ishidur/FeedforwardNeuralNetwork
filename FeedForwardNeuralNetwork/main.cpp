@@ -21,7 +21,7 @@ MatrixXd dataSet(4, 2);
 VectorXd teachSet(4);
 
 //Network structure. make sure layer number is equal to array number.
-array<int, 4> structure = {2, 2, 2, 1};
+array<int, 3> structure = {2, 2, 1};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
@@ -174,6 +174,7 @@ int main()
 			filename += "X";
 		}
 	}
+	filename += "-" + to_string(epoch_time);
 	filename += ".csv";
 	ofstream ofs(filename);
 	ofs << "learning time" << ", ";
