@@ -88,9 +88,9 @@ double validate()
 		VectorXd output[structure.size()];
 		output[0] = dataSet.row(i).transpose();
 
-		for (int i = 0; i < structure.size() - 1; i++)
+		for (int j = 0; j < structure.size() - 1; j++)
 		{
-			output[i + 1] = (output[i].transpose() * weights[i] + biases[i].transpose()).unaryExpr(activationFunc);
+			output[j + 1] = (output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc);
 		}
 
 		VectorXd teach(1);
@@ -108,9 +108,9 @@ void test()
 		VectorXd output[structure.size()];
 		output[0] = dataSet.row(i).transpose();
 
-		for (int i = 0; i < structure.size() - 1; i++)
+		for (int j = 0; j < structure.size() - 1; j++)
 		{
-			output[i + 1] = (output[i].transpose() * weights[i] + biases[i].transpose()).unaryExpr(activationFunc);
+			output[j + 1] = (output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc);
 		}
 		cout << "input" << endl;
 		cout << dataSet.row(i) << endl;
