@@ -78,7 +78,7 @@ void backpropergation(VectorXd output[structure.size()], VectorXd teachData)
 	}
 }
 
-void validate(ostream& out = cout)
+double validate()
 {
 	double error = 0.0;
 	for (int i = 0; i < dataSet.rows(); ++i)
@@ -96,7 +96,7 @@ void validate(ostream& out = cout)
 		teach << teachSet[i];
 		error += errorFunc(output[structure.size() - 1], teach).sum();
 	}
-	out << error << endl;
+	return error;
 }
 
 void test()
@@ -132,8 +132,21 @@ void learnProccess(VectorXd input, VectorXd teachData, ostream& out = cout)
 	}
 	//	backpropergation method
 	backpropergation(output, teachData);
-
-	validate(out);
+	for (int i = 0; i < structure.size() - 1; ++i)
+	{
+		for (int j = 0; j < weights[i].rows(); ++j)
+		{
+			for (int k = 0; k < weights[i].cols(); ++k)
+			{
+				out << weights[i](j, k) << ", ";
+			}
+		}
+		for (int j = 0; j < biases[i].size(); ++j)
+		{
+			out << biases[i][j] << ", ";
+		}
+	}
+	out << validate() << endl;
 }
 
 int main()
@@ -146,15 +159,42 @@ int main()
 		1 ,
 		1 ,
 		0;
-	cout << dataSet << endl << endl;
 	random_device rnd;
 	mt19937 mt(rnd());
 	initWeightsAndBiases();
 	int a[4] = {0};
-	ofstream ofs("testResult.csv");
+	string filename = "result-";
+	filename += to_string(structure.size()) + "-layers-";
+	for (int i = 0; i < structure.size(); ++i)
+	{
+		filename += to_string(structure[i]);
+		if (i < structure.size() - 1)
+		{
+			filename += "X";
+		}
+	}
+	filename += ".csv";
+	ofstream ofs(filename);
+	ofs << "learning time" << ", ";
 
+	for (int i = 0; i < structure.size() - 1; ++i)
+	{
+		for (int j = 0; j < weights[i].rows(); ++j)
+		{
+			for (int k = 0; k < weights[i].cols(); ++k)
+			{
+				ofs << "weight:" << "l:" << i << ":" << j << ":" << k << ", ";
+			}
+		}
+		for (int j = 0; j < biases[i].size(); ++j)
+		{
+			ofs << "bias" << "l:" << i << ":" << j << ", ";
+		}
+	}
+	ofs << "error" << endl;
 	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
+		ofs << i << ", ";
 		int n = mt() % 4;
 		a[n]++;
 		VectorXd input = dataSet.row(n);
