@@ -21,7 +21,7 @@ MatrixXd dataSet(4, 2);
 VectorXd teachSet(4);
 
 //Network structure. make sure layer number is equal to array number.
-array<int, 4> structure = {2, 2, 2, 1};
+array<int, 5> structure = {2, 2, 2, 2, 1};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
@@ -29,8 +29,8 @@ void initWeightsAndBiases()
 {
 	for (int i = 1; i < structure.size(); ++i)
 	{
-		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * 0.3);
-		biases.push_back(VectorXd::Random(structure[i]) * 0.3);
+		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * 1.5);
+		biases.push_back(VectorXd::Random(structure[i]) * 1.5);
 	}
 }
 
@@ -202,7 +202,6 @@ int main()
 			progress += "#";
 		}
 		cout << "progress: " << setw(4) << right << fixed << setprecision(1) << (status) << "% " << progress << "\r" << flush;
-
 		ofs << i << ", ";
 		int n = mt() % 4;
 		a[n]++;
