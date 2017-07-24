@@ -8,8 +8,8 @@
 #include <iostream>
 #include <random>
 
-#define LEARNING_RATE 0.5
-#define LEARNING_TIME 4
+#define LEARNING_RATE 0.7
+#define LEARNING_TIME 24000
 using namespace std;
 using namespace Eigen;
 
@@ -19,16 +19,20 @@ MatrixXd dataSet(4, 2);
 VectorXd teachSet(4);
 
 //Network structure. make sure layer number is equal to array number.
-array<int, 4> structure = {2, 3, 2, 1};
+array<int, 3> structure = {2, 2, 1};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
 void initWeightsAndBiases()
 {
+
+	random_device rnd;
+	mt19937 mt(rnd());
+	uniform_int_distribution<> rand100(0, 99);
 	for (int i = 1; i < structure.size(); ++i)
 	{
-		weights.push_back(MatrixXd::Constant(structure[i - 1], structure[i], 0.5));
-		biases.push_back(VectorXd::Constant(structure[i], 0.5));
+		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i])*0.3);
+		biases.push_back(VectorXd::Random(structure[i])*0.3);
 	}
 }
 
@@ -71,7 +75,6 @@ void backpropergation(VectorXd output[structure.size()], VectorXd teachData)
 	for (int i = 3; i <= structure.size(); ++i)
 	{
 		int n = structure.size() - i;
-		cout << n << endl;
 		delta = calcDelta(n, output, delta);
 		weights[n] -= LEARNING_RATE * output[n] * delta;
 		biases[n] -= LEARNING_RATE * delta.transpose();
@@ -81,12 +84,11 @@ void backpropergation(VectorXd output[structure.size()], VectorXd teachData)
 void validate()
 {
 	double error = 0.0;
-	for (int i = 0; i < dataSet.size(); ++i)
+	for (int i = 0; i < dataSet.rows(); ++i)
 	{
 		//	feedforward proccess
-
 		VectorXd output[structure.size()];
-		output[0] = dataSet.row(i);
+		output[0] = dataSet.row(i).transpose();
 
 		for (int i = 0; i < structure.size() - 1; i++)
 		{
@@ -110,9 +112,10 @@ VectorXd learnProccess(VectorXd input, VectorXd teachData)
 	{
 		output[i + 1] = (output[i].transpose() * weights[i] + biases[i].transpose()).unaryExpr(activationFunc);
 	}
-
 	//	backpropergation method
 	backpropergation(output, teachData);
+
+	validate();
 
 	return output[structure.size() - 1];
 }
@@ -128,15 +131,14 @@ int main()
 		1 ,
 		0;
 	cout << dataSet << endl << endl;
-	cout << dataSet.row(1) << endl;
 	random_device rnd;
 	mt19937 mt(rnd());
+
 	initWeightsAndBiases();
 	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
 		int n = mt() % 4;
 		VectorXd input = dataSet.row(n);
-
 		VectorXd teach(1);
 		teach << teachSet[n];
 		VectorXd out = learnProccess(input, teach);
