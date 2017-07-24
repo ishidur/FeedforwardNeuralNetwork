@@ -11,7 +11,7 @@
 #include <iomanip>
 
 #define LEARNING_RATE 0.7
-#define LEARNING_TIME 50000
+#define LEARNING_TIME 100000
 using namespace std;
 using namespace Eigen;
 
@@ -29,14 +29,14 @@ void initWeightsAndBiases()
 {
 	for (int i = 1; i < structure.size(); ++i)
 	{
-		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * 0.003);
-		biases.push_back(VectorXd::Random(structure[i]) * 0.003);
+		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * 0.3);
+		biases.push_back(VectorXd::Random(structure[i]) * 0.3);
 	}
 }
 
 double sigmoid(double input)
 {
-	return 1.0 / (1 + exp(-input));
+	return 1.0 / (1 + exp(-2.0 * input));
 }
 
 auto activationFunc = [](const double input)
