@@ -189,7 +189,7 @@ int main()
 		}
 		for (int j = 0; j < biases[i].size(); ++j)
 		{
-			ofs << "bias" << "l:" << i << ":" << j << ", ";
+			ofs << "bias:" << "l:" << i << ":" << j << ", ";
 		}
 	}
 	ofs << "error" << endl;
