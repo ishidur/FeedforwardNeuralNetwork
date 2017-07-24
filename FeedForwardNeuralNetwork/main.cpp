@@ -225,7 +225,7 @@ int main()
 		//		error = learnProccess(input, teach);
 	}
 	cout << endl;
-	cout << error << endl;
+	cout << "error; " << error << endl;
 
 	for (int i = 0; i < 4; ++i)
 	{
