@@ -8,9 +8,10 @@
 #include <iostream>
 #include <random>
 #include <fstream>
+#include <iomanip>
 
 #define LEARNING_RATE 0.7
-#define LEARNING_TIME 24000
+#define LEARNING_TIME 50000
 using namespace std;
 using namespace Eigen;
 
@@ -20,7 +21,7 @@ MatrixXd dataSet(4, 2);
 VectorXd teachSet(4);
 
 //Network structure. make sure layer number is equal to array number.
-array<int, 3> structure = {2, 2, 1};
+array<int, 4> structure = {2, 2, 2, 1};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
@@ -28,8 +29,8 @@ void initWeightsAndBiases()
 {
 	for (int i = 1; i < structure.size(); ++i)
 	{
-		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * 0.03);
-		biases.push_back(VectorXd::Random(structure[i]) * 0.03);
+		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * 0.003);
+		biases.push_back(VectorXd::Random(structure[i]) * 0.003);
 	}
 }
 
@@ -192,8 +193,16 @@ int main()
 		}
 	}
 	ofs << "error" << endl;
+	string progress = "";
 	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
+		double status = double(i * 100.0 / (LEARNING_TIME - 1));
+		if (progress.size() < int(status) / 5)
+		{
+			progress += "#";
+		}
+		cout << "progress: " << setw(4) << right << fixed << setprecision(1) << (status) << "% " << progress << "\r" << flush;
+
 		ofs << i << ", ";
 		int n = mt() % 4;
 		a[n]++;
@@ -202,6 +211,8 @@ int main()
 		teach << teachSet[n];
 		learnProccess(input, teach, ofs);
 	}
+	cout << endl;
+
 	for (int i = 0; i < 4; ++i)
 	{
 		cout << i << ";" << endl;
