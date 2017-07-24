@@ -36,7 +36,7 @@ void initWeightsAndBiases()
 
 double sigmoid(double input)
 {
-	return 1.0 / (1 + exp(-2.0 * input));
+	return 1.0 / (1 + exp(-input));
 }
 
 auto activationFunc = [](const double input)
