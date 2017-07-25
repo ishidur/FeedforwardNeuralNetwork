@@ -11,9 +11,10 @@
 #include <iomanip>
 #include <time.h>
 
-#define INITIAL_VAL 0.03
+#define TRIALS_PER_STRUCTURE 2
+#define INITIAL_VAL 2.0
 #define LEARNING_RATE 0.7
-#define LEARNING_TIME 100000
+#define LEARNING_TIME 10
 #define ERROR_BOTTOM 0.0001
 using namespace std;
 using namespace Eigen;
@@ -24,12 +25,14 @@ MatrixXd dataSet(4, 2);
 VectorXd teachSet(4);
 
 //Network structure. make sure layer number is equal to array number.
-array<int, 3> structure = {2, 2, 1};
+vector<vector<int>> structures = {{2, 2, 1}, {2, 2, 2, 1}};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
-void initWeightsAndBiases()
+void initWeightsAndBiases(vector<int> structure)
 {
+	weights.clear();
+	biases.clear();
 	for (int i = 1; i < structure.size(); ++i)
 	{
 		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * INITIAL_VAL);
@@ -60,14 +63,14 @@ VectorXd errorFunc(VectorXd outData, VectorXd teachData)
 	return error;
 }
 
-MatrixXd calcDelta(int layerNo, VectorXd output[structure.size()], MatrixXd prevDelta)
+MatrixXd calcDelta(vector<int> structure, int layerNo, vector<VectorXd> output, MatrixXd prevDelta)
 {
 	VectorXd differential = output[layerNo + 1].array() * (VectorXd::Ones(structure[layerNo + 1]) - output[layerNo + 1]).array();
 	MatrixXd delta = (prevDelta * weights[layerNo + 1].transpose()).array() * differential.transpose().array();
 	return delta;
 }
 
-void backpropergation(VectorXd output[structure.size()], VectorXd teachData)
+void backpropergation(vector<int> structure, vector<VectorXd> output, VectorXd teachData)
 {
 	VectorXd differential = output[structure.size() - 1].array() * (VectorXd::Ones(structure[structure.size() - 1]) - output[structure.size() - 1]).array();
 	MatrixXd delta = (output[structure.size() - 1] - teachData).transpose().array() * differential.transpose().array();
@@ -76,24 +79,24 @@ void backpropergation(VectorXd output[structure.size()], VectorXd teachData)
 	for (int i = 3; i <= structure.size(); ++i)
 	{
 		int n = structure.size() - i;
-		delta = calcDelta(n, output, delta);
+		delta = calcDelta(structure, n, output, delta);
 		weights[n] -= LEARNING_RATE * output[n] * delta;
 		biases[n] -= LEARNING_RATE * delta.transpose();
 	}
 }
 
-double validate()
+double validate(vector<int> structure)
 {
 	double error = 0.0;
 	for (int i = 0; i < dataSet.rows(); ++i)
 	{
 		//	feedforward proccess
-		VectorXd output[structure.size()];
-		output[0] = dataSet.row(i).transpose();
+		vector<VectorXd> output;
+		output.push_back(dataSet.row(i).transpose());
 
 		for (int j = 0; j < structure.size() - 1; j++)
 		{
-			output[j + 1] = (output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc);
+			output.push_back((output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc));
 		}
 
 		VectorXd teach(1);
@@ -103,17 +106,17 @@ double validate()
 	return error;
 }
 
-void test()
+void test(vector<int> structure)
 {
 	for (int i = 0; i < dataSet.rows(); ++i)
 	{
 		//	feedforward proccess
-		VectorXd output[structure.size()];
-		output[0] = dataSet.row(i).transpose();
+		vector<VectorXd> output;
+		output.push_back(dataSet.row(i).transpose());
 
 		for (int j = 0; j < structure.size() - 1; j++)
 		{
-			output[j + 1] = (output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc);
+			output.push_back((output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc));
 		}
 		cout << "input" << endl;
 		cout << dataSet.row(i) << endl;
@@ -124,18 +127,18 @@ void test()
 	}
 }
 
-double learnProccess(VectorXd input, VectorXd teachData, ostream& out = cout)
+double learnProccess(vector<int> structure, VectorXd input, VectorXd teachData, ostream& out = cout)
 {
 	//	feedforward proccess
-	VectorXd output[structure.size()];
-	output[0] = input;
+	vector<VectorXd> output;
+	output.push_back(input);
 
 	for (int i = 0; i < structure.size() - 1; i++)
 	{
-		output[i + 1] = (output[i].transpose() * weights[i] + biases[i].transpose()).unaryExpr(activationFunc);
+		output.push_back((output[i].transpose() * weights[i] + biases[i].transpose()).unaryExpr(activationFunc));
 	}
 	//	backpropergation method
-	backpropergation(output, teachData);
+	backpropergation(structure, output, teachData);
 
 	for (int i = 0; i < structure.size() - 1; ++i)
 	{
@@ -152,27 +155,19 @@ double learnProccess(VectorXd input, VectorXd teachData, ostream& out = cout)
 		}
 	}
 
-	double error = validate();
+	double error = validate(structure);
 	out << error << endl;
 	return error;
 }
 
-int main()
+void singleRun(vector<int> structure)
 {
-	dataSet << 0 , 0 ,
-		0 , 1 ,
-		1 , 0 ,
-		1 , 1;
-	teachSet << 0 ,
-		1 ,
-		1 ,
-		0;
 	random_device rnd;
 	mt19937 mt(rnd());
 	time_t epoch_time;
 	epoch_time = time(NULL);
 
-	initWeightsAndBiases();
+	initWeightsAndBiases(structure);
 	int a[4] = {0};
 	string filename = "result-";
 	filename += to_string(structure.size()) + "-layers-";
@@ -221,17 +216,37 @@ int main()
 		VectorXd input = dataSet.row(n);
 		VectorXd teach(1);
 		teach << teachSet[n];
-		error = learnProccess(input, teach, ofs);
+		error = learnProccess(structure, input, teach, ofs);
 		//		error = learnProccess(input, teach);
 	}
+	ofs.close();
 	cout << endl;
 	cout << "error; " << error << endl;
+}
 
-	for (int i = 0; i < 4; ++i)
+int main()
+{
+	dataSet << 0 , 0 ,
+		0 , 1 ,
+		1 , 0 ,
+		1 , 1;
+	teachSet << 0 ,
+		1 ,
+		1 ,
+		0;
+	for (vector<int> structure : structures)
 	{
-		cout << i << ";" << endl;
-		cout << a[i] << endl;
+		for (int i = 0; i < TRIALS_PER_STRUCTURE; ++i)
+		{
+			cout << "try: " << i << endl;
+			singleRun(structure);
+		}
 	}
-	test();
+	//	for (int i = 0; i < 4; ++i)
+	//	{
+	//		cout << i << ";" << endl;
+	//		cout << a[i] << endl;
+	//	}
+	//	test();
 	return 0;
 }
