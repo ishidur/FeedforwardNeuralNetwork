@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <time.h>
 
-#define INITIAL_VAL 0.03
+#define INITIAL_VAL 1.5
 #define LEARNING_RATE 0.7
 #define LEARNING_TIME 100000
 #define ERROR_BOTTOM 0.0001
@@ -24,7 +24,7 @@ MatrixXd dataSet(4, 2);
 VectorXd teachSet(4);
 
 //Network structure. make sure layer number is equal to array number.
-array<int, 3> structure = {2, 2, 1};
+array<int, 5> structure = {2, 2, 2, 2, 1};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
@@ -117,10 +117,8 @@ void test()
 		}
 		cout << "input" << endl;
 		cout << dataSet.row(i) << endl;
-		cout << "output" << endl;
-		cout << output[structure.size() - 1] << endl;
-		cout << "answer" << endl;
-		cout << teachSet[i] << endl;
+		cout << "output, " << "answer" << endl;
+		cout << output[structure.size() - 1] << ", " << teachSet[i] << endl;
 	}
 }
 
