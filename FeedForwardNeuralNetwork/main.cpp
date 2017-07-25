@@ -2,30 +2,25 @@
 //
 
 #include "stdafx.h"
-#include <array>
 #include <vector>
-#include "Eigen/Core"
 #include <iostream>
 #include <random>
 #include <fstream>
 #include <iomanip>
 #include <time.h>
+#include "XORDataSet.h"
 
-#define TRIALS_PER_STRUCTURE 2
+#define TRIALS_PER_STRUCTURE 10
 #define INITIAL_VAL 2.0
 #define LEARNING_RATE 0.7
-#define LEARNING_TIME 10
+#define LEARNING_TIME 100000
 #define ERROR_BOTTOM 0.0001
-using namespace std;
-using namespace Eigen;
 
 //XOR data
-//(x, y)
-MatrixXd dataSet(4, 2);
-VectorXd teachSet(4);
+XORDataSet dataSet;
 
-//Network structure. make sure layer number is equal to array number.
-vector<vector<int>> structures = {{2, 2, 1}, {2, 2, 2, 1}};
+//Network structure.
+vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 2, 2, 1}};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
@@ -88,19 +83,18 @@ void backpropergation(vector<int> structure, vector<VectorXd> output, VectorXd t
 double validate(vector<int> structure)
 {
 	double error = 0.0;
-	for (int i = 0; i < dataSet.rows(); ++i)
+	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
 	{
 		//	feedforward proccess
 		vector<VectorXd> output;
-		output.push_back(dataSet.row(i).transpose());
+		output.push_back(dataSet.dataSet.row(i).transpose());
 
 		for (int j = 0; j < structure.size() - 1; j++)
 		{
 			output.push_back((output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc));
 		}
 
-		VectorXd teach(1);
-		teach << teachSet[i];
+		VectorXd teach = dataSet.teachSet.row(i);
 		error += errorFunc(output[structure.size() - 1], teach).sum();
 	}
 	return error;
@@ -108,22 +102,22 @@ double validate(vector<int> structure)
 
 void test(vector<int> structure)
 {
-	for (int i = 0; i < dataSet.rows(); ++i)
+	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
 	{
 		//	feedforward proccess
 		vector<VectorXd> output;
-		output.push_back(dataSet.row(i).transpose());
+		output.push_back(dataSet.dataSet.row(i).transpose());
 
 		for (int j = 0; j < structure.size() - 1; j++)
 		{
 			output.push_back((output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc));
 		}
 		cout << "input" << endl;
-		cout << dataSet.row(i) << endl;
+		cout << dataSet.dataSet.row(i) << endl;
 		cout << "output" << endl;
 		cout << output[structure.size() - 1] << endl;
 		cout << "answer" << endl;
-		cout << teachSet[i] << endl;
+		cout << dataSet.teachSet.row(i) << endl;
 	}
 }
 
@@ -168,7 +162,7 @@ void singleRun(vector<int> structure)
 	epoch_time = time(NULL);
 
 	initWeightsAndBiases(structure);
-	int a[4] = {0};
+//	int a[dataSet.dataSet.rows()] = {0};
 	string filename = "result-";
 	filename += to_string(structure.size()) + "-layers-";
 	for (int i = 0; i < structure.size(); ++i)
@@ -211,11 +205,10 @@ void singleRun(vector<int> structure)
 		}
 		cout << "progress: " << setw(4) << right << fixed << setprecision(1) << (status) << "% " << progress << "\r" << flush;
 		ofs << i << ", ";
-		int n = mt() % 4;
-		a[n]++;
-		VectorXd input = dataSet.row(n);
-		VectorXd teach(1);
-		teach << teachSet[n];
+		int n = mt() % dataSet.dataSet.rows();
+//		a[n]++;
+		VectorXd input = dataSet.dataSet.row(n);
+		VectorXd teach = dataSet.teachSet.row(n);
 		error = learnProccess(structure, input, teach, ofs);
 		//		error = learnProccess(input, teach);
 	}
@@ -226,14 +219,6 @@ void singleRun(vector<int> structure)
 
 int main()
 {
-	dataSet << 0 , 0 ,
-		0 , 1 ,
-		1 , 0 ,
-		1 , 1;
-	teachSet << 0 ,
-		1 ,
-		1 ,
-		0;
 	for (vector<int> structure : structures)
 	{
 		for (int i = 0; i < TRIALS_PER_STRUCTURE; ++i)
@@ -242,7 +227,7 @@ int main()
 			singleRun(structure);
 		}
 	}
-	//	for (int i = 0; i < 4; ++i)
+	//	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
 	//	{
 	//		cout << i << ";" << endl;
 	//		cout << a[i] << endl;

@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <tchar.h>
+#include "Eigen/Core"
 
 
+using namespace std;
+using namespace Eigen;
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください
