@@ -20,7 +20,7 @@
 XORDataSet dataSet;
 
 //Network structure.
-vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 2, 2, 1}};
+vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 4, 4, 1}, {2, 2, 2, 2, 1}};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
@@ -162,7 +162,7 @@ void singleRun(vector<int> structure)
 	epoch_time = time(NULL);
 
 	initWeightsAndBiases(structure);
-//	int a[dataSet.dataSet.rows()] = {0};
+	//	int a[dataSet.dataSet.rows()] = {0};
 	string filename = "result-";
 	filename += to_string(structure.size()) + "-layers-";
 	for (int i = 0; i < structure.size(); ++i)
@@ -206,7 +206,7 @@ void singleRun(vector<int> structure)
 		cout << "progress: " << setw(4) << right << fixed << setprecision(1) << (status) << "% " << progress << "\r" << flush;
 		ofs << i << ", ";
 		int n = mt() % dataSet.dataSet.rows();
-//		a[n]++;
+		//		a[n]++;
 		VectorXd input = dataSet.dataSet.row(n);
 		VectorXd teach = dataSet.teachSet.row(n);
 		error = learnProccess(structure, input, teach, ofs);
