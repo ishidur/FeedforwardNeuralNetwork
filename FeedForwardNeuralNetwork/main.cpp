@@ -9,12 +9,13 @@
 #include <iomanip>
 #include <time.h>
 #include "XORDataSet.h"
+#include <numeric>
 
 #define TRIALS_PER_STRUCTURE 10
 #define INITIAL_VAL 0.3
 #define LEARNING_RATE 0.7
 #define LEARNING_TIME 50000
-#define ERROR_BOTTOM 0.0001
+#define ERROR_BOTTOM 0.001
 
 //XOR data
 XORDataSet dataSet;
@@ -156,8 +157,6 @@ double learnProccess(vector<int> structure, VectorXd input, VectorXd teachData, 
 
 double singleRun(vector<int> structure)
 {
-	random_device rnd;
-	mt19937 mt(rnd());
 	time_t epoch_time;
 	epoch_time = time(NULL);
 
@@ -205,12 +204,18 @@ double singleRun(vector<int> structure)
 		}
 		cout << "progress: " << setw(4) << right << fixed << setprecision(1) << (status) << "% " << progress << "\r" << flush;
 		ofs << i << ", ";
-		int n = mt() % dataSet.dataSet.rows();
-		//		a[n]++;
-		VectorXd input = dataSet.dataSet.row(n);
-		VectorXd teach = dataSet.teachSet.row(n);
-		error = learnProccess(structure, input, teach, ofs);
-		//		error = learnProccess(input, teach);
+
+		vector<int> ns(dataSet.dataSet.rows());
+		iota(ns.begin(), ns.end(), 0);
+		shuffle(ns.begin(), ns.end(), mt19937());
+		for (int n : ns)
+		{
+			VectorXd input = dataSet.dataSet.row(n);
+			VectorXd teach = dataSet.teachSet.row(n);
+			error = learnProccess(structure, input, teach, ofs);
+			//		error = learnProccess(input, teach);
+			
+		}
 	}
 	ofs.close();
 	cout << endl;
