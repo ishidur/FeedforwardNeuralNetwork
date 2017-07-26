@@ -15,31 +15,34 @@
 #include "MNISTDataSet.h"
 #include <numeric>
 
-#define TRIALS_PER_STRUCTURE 10
-#define INITIAL_VAL 0.3
+//#define TRIALS_PER_STRUCTURE 10
+#define TRIALS_PER_STRUCTURE 1
 #define LEARNING_RATE 0.7
-#define LEARNING_TIME 10000
+#define LEARNING_TIME 1
+//#define LEARNING_TIME 10000
 #define ERROR_BOTTOM 0.01
 
-vector<double> initVals = {0.3, 1.0, 2.0};
+std::vector<double> initVals = {2.0};
+//vector<double> initVals = {0.3, 1.0, 2.0};
 //dataset
 MNISTDataSet dataSet;
 
 //Network structure.
-vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
-vector<MatrixXd> weights;
-vector<VectorXd> biases;
+std::vector<std::vector<int>> structures = {{2, 2, 2, 2, 1}};
+//vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
+std::vector<Eigen::MatrixXd> weights;
+std::vector<Eigen::VectorXd> biases;
 
 bool useSoftmax = true;
 
-void initWeightsAndBiases(vector<int> structure, double iniitalVal)
+void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 {
 	weights.clear();
 	biases.clear();
 	for (int i = 1; i < structure.size(); ++i)
 	{
-		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * iniitalVal);
-		biases.push_back(VectorXd::Random(structure[i]) * iniitalVal);
+		weights.push_back(Eigen::MatrixXd::Random(structure[i - 1], structure[i]) * iniitalVal);
+		biases.push_back(Eigen::VectorXd::Random(structure[i]) * iniitalVal);
 	}
 }
 
@@ -52,7 +55,7 @@ double relu(double input)
 	return input;
 }
 
-VectorXd Relu(VectorXd inputs)
+Eigen::VectorXd Relu(Eigen::VectorXd inputs)
 {
 	return inputs.unaryExpr(relu);
 }
@@ -62,7 +65,7 @@ double tanhype(double input)
 	return tanh(input);
 }
 
-VectorXd Tanh(VectorXd inputs)
+Eigen::VectorXd Tanh(Eigen::VectorXd inputs)
 {
 	return inputs.unaryExpr(tanhype);
 }
@@ -72,14 +75,15 @@ double sigm(double input)
 	return 1.0 / (1 + exp(-input));
 }
 
-VectorXd sigmoid(VectorXd inputs)
+Eigen::VectorXd sigmoid(Eigen::VectorXd inputs)
 {
 	return inputs.unaryExpr(sigm);
 }
 
-VectorXd activationFunc(VectorXd inputs)
+Eigen::VectorXd activationFunc(Eigen::VectorXd inputs)
 {
-	return sigmoid(inputs);
+	Eigen::VectorXd result = sigmoid(inputs);
+	return result;
 }
 
 auto soft = [](const double x)
@@ -87,16 +91,18 @@ auto soft = [](const double x)
 	return exp(x);
 };
 
-VectorXd differential(VectorXd input)
+Eigen::VectorXd softmax(Eigen::VectorXd inputs)
 {
-	return input.array() * (VectorXd::Ones(input.size()) - input).array();
+	Eigen::VectorXd a = inputs.unaryExpr(soft);
+	double s = a.sum();
+	Eigen::VectorXd b = a / s;
+	return b;
 }
 
-VectorXd softmax(VectorXd inputs)
+Eigen::VectorXd differential(Eigen::VectorXd input)
 {
-	VectorXd a = inputs.unaryExpr(soft);
-	VectorXd b = a / a.sum();
-	return b;
+	Eigen::VectorXd result = input.array() * (Eigen::VectorXd::Ones(input.size()) - input).array();
+	return result;
 }
 
 auto squared = [](const double x)
@@ -105,39 +111,40 @@ auto squared = [](const double x)
 };
 auto cross = [](const double x)
 {
-	return log(x);
+	double y = log(x);
+	return y;
 };
 
-double errorFunc(VectorXd outData, VectorXd teachData)
+double errorFunc(Eigen::VectorXd outData, Eigen::VectorXd teachData)
 {
 	double error;
 	if (useSoftmax)
 	{
-		VectorXd v1 = outData.unaryExpr(cross);
-		VectorXd v2 = teachData;
+		Eigen::VectorXd v1 = outData.unaryExpr(cross);
+		Eigen::VectorXd v2 = teachData;
 		error = -v2.dot(v1);
 	}
 	else
 	{
 		//	Mean Square Error
-		VectorXd err = (teachData - outData).unaryExpr(squared);
+		Eigen::VectorXd err = (teachData - outData).unaryExpr(squared);
 		err *= 1.0 / 2.0;
 		error = err.sum();
 	}
 	return error;
 }
 
-MatrixXd calcDelta(vector<int> structure, int layerNo, vector<VectorXd> output, MatrixXd prevDelta)
+Eigen::MatrixXd calcDelta(std::vector<int> structure, int layerNo, std::vector<Eigen::VectorXd> output, Eigen::MatrixXd prevDelta)
 {
-	VectorXd diff = differential(output[layerNo + 1]);
-	MatrixXd delta = (prevDelta * weights[layerNo + 1].transpose()).array() * diff.transpose().array();
+	Eigen::VectorXd diff = differential(output[layerNo + 1]);
+	Eigen::MatrixXd delta = (prevDelta * weights[layerNo + 1].transpose()).array() * diff.transpose().array();
 	return delta;
 }
 
-void backpropergation(vector<int> structure, vector<VectorXd> output, VectorXd teachData)
+void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> output, Eigen::VectorXd teachData)
 {
-	VectorXd diff = differential(output[structure.size() - 1]);
-	MatrixXd delta;
+	Eigen::VectorXd diff = differential(output[structure.size() - 1]);
+	Eigen::MatrixXd delta;
 
 	if (useSoftmax)
 	{
@@ -158,19 +165,19 @@ void backpropergation(vector<int> structure, vector<VectorXd> output, VectorXd t
 	}
 }
 
-double validate(vector<int> structure)
+double validate(std::vector<int> structure)
 {
 	double error = 0.0;
 	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	{
 		//	feedforward proccess
-		vector<VectorXd> outputs;
+		std::vector<Eigen::VectorXd> outputs;
 		outputs.push_back(dataSet.testDataSet.row(i).transpose());
 
 		for (int j = 0; j < structure.size() - 1; j++)
 		{
-			VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
-			VectorXd output;
+			Eigen::VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
+			Eigen::VectorXd output;
 			if (useSoftmax && j == structure.size() - 2)
 			{
 				output = softmax(inputs);
@@ -182,24 +189,24 @@ double validate(vector<int> structure)
 			outputs.push_back(output);
 		}
 
-		VectorXd teach = dataSet.testTeachSet.row(i);
+		Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
 		error += errorFunc(outputs[structure.size() - 1], teach);
 	}
 	return error;
 }
 
-void test(vector<int> structure)
+void test(std::vector<int> structure)
 {
 	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	{
 		//	feedforward proccess
-		vector<VectorXd> outputs;
+		std::vector<Eigen::VectorXd> outputs;
 		outputs.push_back(dataSet.testDataSet.row(i).transpose());
 
 		for (int j = 0; j < structure.size() - 1; j++)
 		{
-			VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
-			VectorXd output;
+			Eigen::VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
+			Eigen::VectorXd output;
 			if (useSoftmax && j == structure.size() - 2)
 			{
 				output = softmax(inputs);
@@ -210,25 +217,25 @@ void test(vector<int> structure)
 			}
 			outputs.push_back(output);
 		}
-		cout << "input" << endl;
-		cout << dataSet.testDataSet.row(i) << endl;
-		cout << "output" << endl;
-		cout << outputs[structure.size() - 1] << endl;
-		cout << "answer" << endl;
-		cout << dataSet.testTeachSet.row(i) << endl;
+		std::cout << "input" << std::endl;
+		std::cout << dataSet.testDataSet.row(i) << std::endl;
+		std::cout << "output" << std::endl;
+		std::cout << outputs[structure.size() - 1] << std::endl;
+		std::cout << "answer" << std::endl;
+		std::cout << dataSet.testTeachSet.row(i) << std::endl;
 	}
 }
 
-double learnProccess(vector<int> structure, VectorXd input, VectorXd teachData, ostream& out = cout)
+double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::VectorXd teachData, std::ostream& out = std::cout)
 {
 	//	feedforward proccess
-	vector<VectorXd> outputs;
+	std::vector<Eigen::VectorXd> outputs;
 	outputs.push_back(input);
 
 	for (int i = 0; i < structure.size() - 1; i++)
 	{
-		VectorXd inputs = (outputs[i].transpose() * weights[i] + biases[i].transpose());
-		VectorXd output;
+		Eigen::VectorXd inputs = (outputs[i].transpose() * weights[i] + biases[i].transpose());
+		Eigen::VectorXd output;
 		if (useSoftmax && i == structure.size() - 2)
 		{
 			output = softmax(inputs);
@@ -258,16 +265,16 @@ double learnProccess(vector<int> structure, VectorXd input, VectorXd teachData, 
 	}
 
 	double error = validate(structure);
-	out << error << endl;
+	out << error << std::endl;
 	return error;
 }
 
-double singleRun(vector<int> structure, double initVal, string filename)
+double singleRun(std::vector<int> structure, double initVal, std::string filename)
 {
 	initWeightsAndBiases(structure, initVal);
 	//	int a[dataSet.dataSet.rows()] = {0};
 
-	ofstream ofs(filename);
+	std::ofstream ofs(filename);
 	for (int i = 0; i < structure.size() - 1; ++i)
 	{
 		for (int j = 0; j < weights[i].rows(); ++j)
@@ -282,8 +289,8 @@ double singleRun(vector<int> structure, double initVal, string filename)
 			ofs << "bias:" << "l:" << i << ":" << j << ", ";
 		}
 	}
-	ofs << "error" << endl;
-	string progress = "";
+	ofs << "error" << std::endl;
+	std::string progress = "";
 	double error = 1.0;
 	//	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
 	for (int i = 0; i < LEARNING_TIME; ++i)
@@ -293,86 +300,87 @@ double singleRun(vector<int> structure, double initVal, string filename)
 		{
 			progress += "#";
 		}
-		cout << "progress: " << setw(4) << right << fixed << setprecision(1) << (status) << "% " << progress << "\r" << flush;
+		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " << progress << "\r" << std::flush;
 
-		vector<int> ns(dataSet.dataSet.rows());
+		std::vector<int> ns(dataSet.dataSet.rows());
 		iota(ns.begin(), ns.end(), 0);
-		shuffle(ns.begin(), ns.end(), mt19937());
+		shuffle(ns.begin(), ns.end(), std::mt19937());
 		for (int n : ns)
 		{
-			VectorXd input = dataSet.dataSet.row(n);
-			VectorXd teach = dataSet.teachSet.row(n);
+			Eigen::VectorXd input = dataSet.dataSet.row(n);
+			Eigen::VectorXd teach = dataSet.teachSet.row(n);
 			error = learnProccess(structure, input, teach, ofs);
 			//		error = learnProccess(input, teach);
 		}
 	}
 	ofs.close();
-	cout << endl;
+	std::cout << std::endl;
 	return error;
 }
 
 int main()
 {
+	dataSet.load();
 	for (double init_val : initVals)
 	{
-		string dirName = "data\\";
-		ostringstream sout;
-		sout << fixed << setprecision(1) << init_val;
-		string s = sout.str();
+		std::string dirName = "data\\";
+		std::ostringstream sout;
+		sout << std::fixed << std::setprecision(1) << init_val;
+		std::string s = sout.str();
 		dirName += s;
 		dirName += "\\";
 		if (!MakeSureDirectoryPathExists(dirName.c_str()))
 		{
 			break;
 		}
-		string filename = dirName;
+		std::string filename = dirName;
 		filename += "static.csv";
-		ofstream ofs2(filename);
-		for (vector<int> structure : structures)
+		std::ofstream ofs2(filename);
+		for (std::vector<int> structure : structures)
 		{
-			string layers = "";
+			std::string layers = "";
 			for (int i = 0; i < structure.size(); ++i)
 			{
-				layers += to_string(structure[i]);
+				layers += std::to_string(structure[i]);
 				if (i < structure.size() - 1)
 				{
 					layers += "X";
 				}
 			}
-			ofs2 << "structures, " << layers << endl;
-			cout << "structures; " << layers << endl;
+			ofs2 << "structures, " << layers << std::endl;
+			std::cout << "structures; " << layers << std::endl;
 			int correct = 0;
 			for (int i = 0; i < TRIALS_PER_STRUCTURE; ++i)
 			{
 				time_t epoch_time;
 				epoch_time = time(NULL);
-				ofs2 << "try, " << i << endl;
-				cout << "try: " << i << endl;
-				string filename = dirName;
-				filename += "result-";
-				filename += to_string(structure.size()) + "-layers-";
-				filename += layers;
-				filename += "-" + to_string(epoch_time);
-				filename += ".csv";
-				ofs2 << "file, " << filename << endl;
-				cout << filename << endl;
-				double err = singleRun(structure, init_val, filename);
-				ofs2 << "error, " << err << endl;
-				cout << "error; " << err << endl;
+				ofs2 << "try, " << i << std::endl;
+				std::cout << "try: " << i << std::endl;
+				std::string fileName = dirName;
+				fileName += "result-";
+				fileName += std::to_string(structure.size()) + "-layers-";
+				fileName += layers;
+				fileName += "-" + std::to_string(epoch_time);
+				fileName += ".csv";
+				ofs2 << "file, " << fileName << std::endl;
+				std::cout << fileName << std::endl;
+				double err = singleRun(structure, init_val, fileName);
+				ofs2 << "error, " << err << std::endl;
+				std::cout << "error; " << err << std::endl;
 				if (err < ERROR_BOTTOM)
 				{
 					correct++;
 				}
 			}
-			ofs2 << correct << " / " << TRIALS_PER_STRUCTURE << " success" << endl;
-			cout << correct << " / " << TRIALS_PER_STRUCTURE << " success" << endl;
+			ofs2 << correct << " / " << TRIALS_PER_STRUCTURE << " success" << std::endl;
+			std::cout << correct << " / " << TRIALS_PER_STRUCTURE << " success" << std::endl;
 		}
 		ofs2.close();
 	}
 	//	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
 	//	{
-	//		cout << i << ";" << endl;
-	//		cout << a[i] << endl;
+	//		std::cout << i << ";" << std::endl;
+	//		std::cout << a[i] << std::endl;
 	//	}
 	//	test();
 	return 0;

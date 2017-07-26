@@ -4,6 +4,10 @@
 
 XORDataSet::XORDataSet()
 {
+}
+
+void XORDataSet::load()
+{
 	dataSet.resize(4, 2);
 	teachSet.resize(4, 1);
 	dataSet << 0, 0,
