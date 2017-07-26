@@ -2,6 +2,9 @@
 //
 
 #include "stdafx.h"
+#include<windows.h>
+#include <imagehlp.h>
+#pragma comment(lib, "imagehlp.lib")
 #include <vector>
 #include <iostream>
 #include <random>
@@ -14,9 +17,11 @@
 #define TRIALS_PER_STRUCTURE 10
 #define INITIAL_VAL 0.3
 #define LEARNING_RATE 0.7
-#define LEARNING_TIME 50000
-#define ERROR_BOTTOM 0.001
+#define LEARNING_TIME 10000
+#define ERROR_BOTTOM 0.01
 
+//vector<double> initVals = { 0.3, 1.0, 2.0 };
+vector<double> initVals = {1.0, 2.0};
 //XOR data
 XORDataSet dataSet;
 
@@ -25,14 +30,14 @@ vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1},
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
-void initWeightsAndBiases(vector<int> structure)
+void initWeightsAndBiases(vector<int> structure, double iniitalVal)
 {
 	weights.clear();
 	biases.clear();
 	for (int i = 1; i < structure.size(); ++i)
 	{
-		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * INITIAL_VAL);
-		biases.push_back(VectorXd::Random(structure[i]) * INITIAL_VAL);
+		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * iniitalVal);
+		biases.push_back(VectorXd::Random(structure[i]) * iniitalVal);
 	}
 }
 
@@ -155,28 +160,13 @@ double learnProccess(vector<int> structure, VectorXd input, VectorXd teachData, 
 	return error;
 }
 
-double singleRun(vector<int> structure)
+double singleRun(vector<int> structure, double initVal, string filename)
 {
-	time_t epoch_time;
-	epoch_time = time(NULL);
 
-	initWeightsAndBiases(structure);
+	initWeightsAndBiases(structure, initVal);
 	//	int a[dataSet.dataSet.rows()] = {0};
-	string filename = "result-";
-	filename += to_string(structure.size()) + "-layers-";
-	for (int i = 0; i < structure.size(); ++i)
-	{
-		filename += to_string(structure[i]);
-		if (i < structure.size() - 1)
-		{
-			filename += "X";
-		}
-	}
-	filename += "-" + to_string(epoch_time);
-	filename += ".csv";
+	
 	ofstream ofs(filename);
-	ofs << "learning time" << ", ";
-
 	for (int i = 0; i < structure.size() - 1; ++i)
 	{
 		for (int j = 0; j < weights[i].rows(); ++j)
@@ -203,7 +193,6 @@ double singleRun(vector<int> structure)
 			progress += "#";
 		}
 		cout << "progress: " << setw(4) << right << fixed << setprecision(1) << (status) << "% " << progress << "\r" << flush;
-		ofs << i << ", ";
 
 		vector<int> ns(dataSet.dataSet.rows());
 		iota(ns.begin(), ns.end(), 0);
@@ -214,40 +203,70 @@ double singleRun(vector<int> structure)
 			VectorXd teach = dataSet.teachSet.row(n);
 			error = learnProccess(structure, input, teach, ofs);
 			//		error = learnProccess(input, teach);
-			
 		}
 	}
 	ofs.close();
 	cout << endl;
-	cout << "error; " << error << endl;
 	return error;
 }
 
 int main()
 {
-	for (vector<int> structure : structures)
+	for (double init_val : initVals)
 	{
-		string layers = "";
-		for (int i = 0; i < structure.size(); ++i)
+		string dirName = "./data/";
+		ostringstream sout;
+		sout << fixed << setprecision(1) << init_val;
+		string s = sout.str();
+		dirName += s;
+		dirName += "/";
+		if (!MakeSureDirectoryPathExists(dirName.c_str()))
 		{
-			layers += to_string(structure[i]);
-			if (i < structure.size() - 1)
-			{
-				layers += "X";
-			}
+			break;
 		}
-		cout << "structures; " << layers << endl;
-		int correct = 0;
-		for (int i = 0; i < TRIALS_PER_STRUCTURE; ++i)
+		string filename = dirName;
+		filename += "static.csv";
+		ofstream ofs2(filename);
+		for (vector<int> structure : structures)
 		{
-			cout << "try: " << i << endl;
-			double err = singleRun(structure);
-			if (err < ERROR_BOTTOM)
+			string layers = "";
+			for (int i = 0; i < structure.size(); ++i)
 			{
-				correct++;
+				layers += to_string(structure[i]);
+				if (i < structure.size() - 1)
+				{
+					layers += "X";
+				}
 			}
+			ofs2 << "structures, " << layers << endl;
+			cout << "structures; " << layers << endl;
+			int correct = 0;
+			for (int i = 0; i < TRIALS_PER_STRUCTURE; ++i)
+			{
+
+				time_t epoch_time;
+				epoch_time = time(NULL);
+				ofs2 << "try, " << i << endl;
+				cout << "try: " << i << endl;
+				string filename = dirName;
+				filename += "result-";
+				filename += to_string(structure.size()) + "-layers-";
+				filename += layers;
+				filename += "-" + to_string(epoch_time);
+				filename += ".csv";
+				ofs2 << "file, " << filename << endl;
+				cout << filename << endl;
+				double err = singleRun(structure, init_val, filename);
+				ofs2 << "error, " << err << endl;
+				cout << "error; " << err << endl;
+				if (err < ERROR_BOTTOM)
+				{
+					correct++;
+				}
+			}
+			ofs2 << correct << " / " << TRIALS_PER_STRUCTURE << " success" << endl;
+			cout << correct << " / " << TRIALS_PER_STRUCTURE << " success" << endl;
 		}
-		cout << correct << " success out of " << TRIALS_PER_STRUCTURE << " trials" << endl;
 	}
 	//	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
 	//	{
