@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <time.h>
 #include "XORDataSet.h"
+#include "MNISTDataSet.h"
 #include <numeric>
 
 #define TRIALS_PER_STRUCTURE 10
@@ -20,14 +21,16 @@
 #define LEARNING_TIME 10000
 #define ERROR_BOTTOM 0.01
 
-vector<double> initVals = { 0.3, 1.0, 2.0 };
-//XOR data
-XORDataSet dataSet;
+vector<double> initVals = {0.3, 1.0, 2.0};
+//dataset
+MNISTDataSet dataSet;
 
 //Network structure.
 vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
+
+bool useSoftmax = true;
 
 void initWeightsAndBiases(vector<int> structure, double iniitalVal)
 {
@@ -40,40 +43,110 @@ void initWeightsAndBiases(vector<int> structure, double iniitalVal)
 	}
 }
 
-double sigmoid(double input)
+double relu(double input)
+{
+	if (input < 0.0)
+	{
+		return 0.0;
+	}
+	return input;
+}
+
+VectorXd Relu(VectorXd inputs)
+{
+	return inputs.unaryExpr(relu);
+}
+
+double tanhype(double input)
+{
+	return tanh(input);
+}
+
+VectorXd Tanh(VectorXd inputs)
+{
+	return inputs.unaryExpr(tanhype);
+}
+
+double sigm(double input)
 {
 	return 1.0 / (1 + exp(-input));
 }
 
-auto activationFunc = [](const double input)
+VectorXd sigmoid(VectorXd inputs)
 {
-	return sigmoid(input);
+	return inputs.unaryExpr(sigm);
+}
+
+VectorXd activationFunc(VectorXd inputs)
+{
+	return sigmoid(inputs);
+}
+
+auto soft = [](const double x)
+{
+	return exp(x);
 };
+
+VectorXd differential(VectorXd input)
+{
+	return input.array() * (VectorXd::Ones(input.size()) - input).array();
+}
+
+VectorXd softmax(VectorXd inputs)
+{
+	VectorXd a = inputs.unaryExpr(soft);
+	VectorXd b = a / a.sum();
+	return b;
+}
 
 auto squared = [](const double x)
 {
 	return x * x;
 };
-
-VectorXd errorFunc(VectorXd outData, VectorXd teachData)
+auto cross = [](const double x)
 {
-	//	Mean Square Error
-	VectorXd error = (teachData - outData).unaryExpr(squared);
-	error *= 1.0 / 2.0;
+	return log(x);
+};
+
+double errorFunc(VectorXd outData, VectorXd teachData)
+{
+	double error;
+	if (useSoftmax)
+	{
+		VectorXd v1 = outData.unaryExpr(cross);
+		VectorXd v2 = teachData;
+		error = -v2.dot(v1);
+	}
+	else
+	{
+		//	Mean Square Error
+		VectorXd err = (teachData - outData).unaryExpr(squared);
+		err *= 1.0 / 2.0;
+		error = err.sum();
+	}
 	return error;
 }
 
 MatrixXd calcDelta(vector<int> structure, int layerNo, vector<VectorXd> output, MatrixXd prevDelta)
 {
-	VectorXd differential = output[layerNo + 1].array() * (VectorXd::Ones(structure[layerNo + 1]) - output[layerNo + 1]).array();
-	MatrixXd delta = (prevDelta * weights[layerNo + 1].transpose()).array() * differential.transpose().array();
+	VectorXd diff = differential(output[layerNo + 1]);
+	MatrixXd delta = (prevDelta * weights[layerNo + 1].transpose()).array() * diff.transpose().array();
 	return delta;
 }
 
 void backpropergation(vector<int> structure, vector<VectorXd> output, VectorXd teachData)
 {
-	VectorXd differential = output[structure.size() - 1].array() * (VectorXd::Ones(structure[structure.size() - 1]) - output[structure.size() - 1]).array();
-	MatrixXd delta = (output[structure.size() - 1] - teachData).transpose().array() * differential.transpose().array();
+	VectorXd diff = differential(output[structure.size() - 1]);
+	MatrixXd delta;
+
+	if (useSoftmax)
+	{
+		delta = (output[structure.size() - 1] - teachData).transpose();
+	}
+	else
+	{
+		delta = (output[structure.size() - 1] - teachData).transpose().array() * diff.transpose().array();
+	}
 	weights[structure.size() - 2] -= LEARNING_RATE * output[structure.size() - 2] * delta;
 	biases[structure.size() - 2] -= LEARNING_RATE * delta.transpose();
 	for (int i = 3; i <= structure.size(); ++i)
@@ -88,56 +161,86 @@ void backpropergation(vector<int> structure, vector<VectorXd> output, VectorXd t
 double validate(vector<int> structure)
 {
 	double error = 0.0;
-	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
+	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	{
 		//	feedforward proccess
-		vector<VectorXd> output;
-		output.push_back(dataSet.dataSet.row(i).transpose());
+		vector<VectorXd> outputs;
+		outputs.push_back(dataSet.testDataSet.row(i).transpose());
 
 		for (int j = 0; j < structure.size() - 1; j++)
 		{
-			output.push_back((output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc));
+			VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
+			VectorXd output;
+			if (useSoftmax && j == structure.size() - 2)
+			{
+				output = softmax(inputs);
+			}
+			else
+			{
+				output = activationFunc(inputs);
+			}
+			outputs.push_back(output);
 		}
 
-		VectorXd teach = dataSet.teachSet.row(i);
-		error += errorFunc(output[structure.size() - 1], teach).sum();
+		VectorXd teach = dataSet.testTeachSet.row(i);
+		error += errorFunc(outputs[structure.size() - 1], teach);
 	}
 	return error;
 }
 
 void test(vector<int> structure)
 {
-	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
+	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	{
 		//	feedforward proccess
-		vector<VectorXd> output;
-		output.push_back(dataSet.dataSet.row(i).transpose());
+		vector<VectorXd> outputs;
+		outputs.push_back(dataSet.testDataSet.row(i).transpose());
 
 		for (int j = 0; j < structure.size() - 1; j++)
 		{
-			output.push_back((output[j].transpose() * weights[j] + biases[j].transpose()).unaryExpr(activationFunc));
+			VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
+			VectorXd output;
+			if (useSoftmax && j == structure.size() - 2)
+			{
+				output = softmax(inputs);
+			}
+			else
+			{
+				output = activationFunc(inputs);
+			}
+			outputs.push_back(output);
 		}
 		cout << "input" << endl;
-		cout << dataSet.dataSet.row(i) << endl;
+		cout << dataSet.testDataSet.row(i) << endl;
 		cout << "output" << endl;
-		cout << output[structure.size() - 1] << endl;
+		cout << outputs[structure.size() - 1] << endl;
 		cout << "answer" << endl;
-		cout << dataSet.teachSet.row(i) << endl;
+		cout << dataSet.testTeachSet.row(i) << endl;
 	}
 }
 
 double learnProccess(vector<int> structure, VectorXd input, VectorXd teachData, ostream& out = cout)
 {
 	//	feedforward proccess
-	vector<VectorXd> output;
-	output.push_back(input);
+	vector<VectorXd> outputs;
+	outputs.push_back(input);
 
 	for (int i = 0; i < structure.size() - 1; i++)
 	{
-		output.push_back((output[i].transpose() * weights[i] + biases[i].transpose()).unaryExpr(activationFunc));
+		VectorXd inputs = (outputs[i].transpose() * weights[i] + biases[i].transpose());
+		VectorXd output;
+		if (useSoftmax && i == structure.size() - 2)
+		{
+			output = softmax(inputs);
+		}
+		else
+		{
+			output = activationFunc(inputs);
+		}
+		outputs.push_back(output);
 	}
 	//	backpropergation method
-	backpropergation(structure, output, teachData);
+	backpropergation(structure, outputs, teachData);
 
 	for (int i = 0; i < structure.size() - 1; ++i)
 	{
@@ -161,10 +264,9 @@ double learnProccess(vector<int> structure, VectorXd input, VectorXd teachData, 
 
 double singleRun(vector<int> structure, double initVal, string filename)
 {
-
 	initWeightsAndBiases(structure, initVal);
 	//	int a[dataSet.dataSet.rows()] = {0};
-	
+
 	ofstream ofs(filename);
 	for (int i = 0; i < structure.size() - 1; ++i)
 	{
@@ -242,7 +344,6 @@ int main()
 			int correct = 0;
 			for (int i = 0; i < TRIALS_PER_STRUCTURE; ++i)
 			{
-
 				time_t epoch_time;
 				epoch_time = time(NULL);
 				ofs2 << "try, " << i << endl;

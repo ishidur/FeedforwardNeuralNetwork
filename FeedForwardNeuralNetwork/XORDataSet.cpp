@@ -14,6 +14,8 @@ XORDataSet::XORDataSet()
 		1,
 		1,
 		0;
+	testDataSet = dataSet;
+	testTeachSet = teachSet;
 }
 
 
