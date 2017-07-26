@@ -20,8 +20,7 @@
 #define LEARNING_TIME 10000
 #define ERROR_BOTTOM 0.01
 
-//vector<double> initVals = { 0.3, 1.0, 2.0 };
-vector<double> initVals = {1.0, 2.0};
+vector<double> initVals = { 0.3, 1.0, 2.0 };
 //XOR data
 XORDataSet dataSet;
 
@@ -214,12 +213,12 @@ int main()
 {
 	for (double init_val : initVals)
 	{
-		string dirName = "./data/";
+		string dirName = "data\\";
 		ostringstream sout;
 		sout << fixed << setprecision(1) << init_val;
 		string s = sout.str();
 		dirName += s;
-		dirName += "/";
+		dirName += "\\";
 		if (!MakeSureDirectoryPathExists(dirName.c_str()))
 		{
 			break;
@@ -267,6 +266,7 @@ int main()
 			ofs2 << correct << " / " << TRIALS_PER_STRUCTURE << " success" << endl;
 			cout << correct << " / " << TRIALS_PER_STRUCTURE << " success" << endl;
 		}
+		ofs2.close();
 	}
 	//	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
 	//	{
