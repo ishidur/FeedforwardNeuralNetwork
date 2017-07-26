@@ -11,16 +11,16 @@
 #include "XORDataSet.h"
 
 #define TRIALS_PER_STRUCTURE 10
-#define INITIAL_VAL 2.0
+#define INITIAL_VAL 0.3
 #define LEARNING_RATE 0.7
-#define LEARNING_TIME 100000
+#define LEARNING_TIME 50000
 #define ERROR_BOTTOM 0.0001
 
 //XOR data
 XORDataSet dataSet;
 
 //Network structure.
-vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 4, 4, 1}, {2, 2, 2, 2, 1}};
+vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
@@ -154,7 +154,7 @@ double learnProccess(vector<int> structure, VectorXd input, VectorXd teachData, 
 	return error;
 }
 
-void singleRun(vector<int> structure)
+double singleRun(vector<int> structure)
 {
 	random_device rnd;
 	mt19937 mt(rnd());
@@ -215,17 +215,34 @@ void singleRun(vector<int> structure)
 	ofs.close();
 	cout << endl;
 	cout << "error; " << error << endl;
+	return error;
 }
 
 int main()
 {
 	for (vector<int> structure : structures)
 	{
+		string layers = "";
+		for (int i = 0; i < structure.size(); ++i)
+		{
+			layers += to_string(structure[i]);
+			if (i < structure.size() - 1)
+			{
+				layers += "X";
+			}
+		}
+		cout << "structures; " << layers << endl;
+		int correct = 0;
 		for (int i = 0; i < TRIALS_PER_STRUCTURE; ++i)
 		{
 			cout << "try: " << i << endl;
-			singleRun(structure);
+			double err = singleRun(structure);
+			if (err < ERROR_BOTTOM)
+			{
+				correct++;
+			}
 		}
+		cout << correct << " success out of " << TRIALS_PER_STRUCTURE << " trials" << endl;
 	}
 	//	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
 	//	{
