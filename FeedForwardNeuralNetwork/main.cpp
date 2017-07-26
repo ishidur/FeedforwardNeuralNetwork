@@ -46,34 +46,34 @@ void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 	}
 }
 
-double relu(double input)
+auto relu = [](const double input)
 {
 	if (input < 0.0)
 	{
 		return 0.0;
 	}
 	return input;
-}
+};
 
 Eigen::VectorXd Relu(Eigen::VectorXd inputs)
 {
 	return inputs.unaryExpr(relu);
 }
 
-double tanhype(double input)
+auto tanhype = [](const double input)
 {
 	return tanh(input);
-}
+};
 
 Eigen::VectorXd Tanh(Eigen::VectorXd inputs)
 {
 	return inputs.unaryExpr(tanhype);
 }
 
-double sigm(double input)
+auto sigm = [](const double input)
 {
 	return 1.0 / (1 + exp(-input));
-}
+};
 
 Eigen::VectorXd sigmoid(Eigen::VectorXd inputs)
 {
