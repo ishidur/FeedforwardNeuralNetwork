@@ -12,6 +12,7 @@
 #include <tchar.h>
 #include "Eigen/Core"
 
+#include "parameters.h"
 
 using namespace std;
 using namespace Eigen;
