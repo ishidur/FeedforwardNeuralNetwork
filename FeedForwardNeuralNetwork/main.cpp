@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iomanip>
 #include <time.h>
+#include <ppl.h>
 #include "XORDataSet.h"
 #include "MNISTDataSet.h"
 #include <numeric>
@@ -28,7 +29,7 @@ std::vector<double> initVals = {2.0};
 MNISTDataSet dataSet;
 
 //Network structure.
-std::vector<std::vector<int>> structures = {{2, 2, 2, 2, 1}};
+std::vector<std::vector<int>> structures = {{784, 100, 10}};
 //vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
@@ -168,35 +169,60 @@ void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> o
 double validate(std::vector<int> structure)
 {
 	double error = 0.0;
-	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
-	{
-		//	feedforward proccess
-		std::vector<Eigen::VectorXd> outputs;
-		outputs.push_back(dataSet.testDataSet.row(i).transpose());
+	Concurrency::parallel_for<int>(0, dataSet.testDataSet.rows(), 1, [&error, structure](int i)
+                               {
+	                               //	feedforward proccess
+	                               std::vector<Eigen::VectorXd> outputs;
+	                               outputs.push_back(dataSet.testDataSet.row(i).transpose());
 
-		for (int j = 0; j < structure.size() - 1; j++)
-		{
-			Eigen::VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
-			Eigen::VectorXd output;
-			if (useSoftmax && j == structure.size() - 2)
-			{
-				output = softmax(inputs);
-			}
-			else
-			{
-				output = activationFunc(inputs);
-			}
-			outputs.push_back(output);
-		}
+	                               for (int j = 0; j < structure.size() - 1; j++)
+	                               {
+		                               Eigen::VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
+		                               Eigen::VectorXd output;
+		                               if (useSoftmax && j == structure.size() - 2)
+		                               {
+			                               output = softmax(inputs);
+		                               }
+		                               else
+		                               {
+			                               output = activationFunc(inputs);
+		                               }
+		                               outputs.push_back(output);
+	                               }
 
-		Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
-		error += errorFunc(outputs[structure.size() - 1], teach);
-	}
+	                               Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
+	                               error += errorFunc(outputs[structure.size() - 1], teach);
+                               });
+	//	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
+	//	{
+	//		//	feedforward proccess
+	//		std::vector<Eigen::VectorXd> outputs;
+	//		outputs.push_back(dataSet.testDataSet.row(i).transpose());
+	//
+	//		for (int j = 0; j < structure.size() - 1; j++)
+	//		{
+	//			Eigen::VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
+	//			Eigen::VectorXd output;
+	//			if (useSoftmax && j == structure.size() - 2)
+	//			{
+	//				output = softmax(inputs);
+	//			}
+	//			else
+	//			{
+	//				output = activationFunc(inputs);
+	//			}
+	//			outputs.push_back(output);
+	//		}
+	//
+	//		Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
+	//		error += errorFunc(outputs[structure.size() - 1], teach);
+	//	}
 	return error;
 }
 
-void test(std::vector<int> structure)
+void test(std::vector<int> structure, std::ostream& out = std::cout)
 {
+	int correct = 0;
 	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	{
 		//	feedforward proccess
@@ -217,13 +243,25 @@ void test(std::vector<int> structure)
 			}
 			outputs.push_back(output);
 		}
-		std::cout << "input" << std::endl;
-		std::cout << dataSet.testDataSet.row(i) << std::endl;
-		std::cout << "output" << std::endl;
-		std::cout << outputs[structure.size() - 1] << std::endl;
-		std::cout << "answer" << std::endl;
-		std::cout << dataSet.testTeachSet.row(i) << std::endl;
+		std::vector<double> y;
+		y.resize(outputs[structure.size() - 1].size());
+		Eigen::VectorXd::Map(&y[0], outputs[structure.size() - 1].size()) = outputs[structure.size() - 1];
+		std::vector<double>::iterator result = std::max_element(y.begin(), y.end());
+		std::vector<double> t;
+		t.resize(outputs[structure.size() - 1].size());
+		Eigen::VectorXd::Map(&t[0], dataSet.testTeachSet.row(i).size()) = dataSet.testTeachSet.row(i);
+		std::vector<double>::iterator teach = std::max_element(t.begin(), t.end());
+		//		out << "input, " << std::endl;
+		//		out << dataSet.testDataSet.row(i) << std::endl;
+		out << "answer, " << "output" << std::endl;
+		out << std::distance(y.begin(), result) << ", " << std::distance(t.begin(), teach) << std::endl;
+		std::cout << std::distance(y.begin(), result) << ", " << std::distance(t.begin(), teach) << std::endl;
+		if (std::distance(y.begin(), result) == std::distance(t.begin(), teach))
+		{
+			correct++;
+		}
 	}
+	out << std::endl << "correct, " << correct << ", /, " << dataSet.testDataSet.rows() << std::endl;
 }
 
 double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::VectorXd teachData, std::ostream& out = std::cout)
@@ -264,8 +302,9 @@ double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::V
 		}
 	}
 
-	double error = validate(structure);
-	out << error << std::endl;
+	double error = 0.0;
+	//	double error = validate(structure);
+	//	out << error << std::endl;
 	return error;
 }
 
@@ -290,29 +329,39 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 		}
 	}
 	ofs << "error" << std::endl;
-	std::string progress = "";
+	//	std::string progress = "";
 	double error = 1.0;
 	//	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
 	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
-		double status = double(i * 100.0 / (LEARNING_TIME - 1));
-		if (progress.size() < int(status) / 5)
-		{
-			progress += "#";
-		}
-		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " << progress << "\r" << std::flush;
-
+		//		double status = double((i + 1) * 100.0 / (LEARNING_TIME));
+		//		if (progress.size() < int(status) / 5)
+		//		{
+		//			progress += "#";
+		//		}
+		//		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " << progress << "\r" << std::flush;
+		std::string progress = "";
+		int s = 0;
 		std::vector<int> ns(dataSet.dataSet.rows());
 		iota(ns.begin(), ns.end(), 0);
 		shuffle(ns.begin(), ns.end(), std::mt19937());
 		for (int n : ns)
 		{
+			s++;
+			double status = double((s) * 100.0 / (ns.size()));
+			if (progress.size() < int(status) / 5)
+			{
+				progress += "#";
+			}
+			std::cout << "progress: " << s << "/ " << (ns.size()) << " " << progress << "\r" << std::flush;
+
 			Eigen::VectorXd input = dataSet.dataSet.row(n);
 			Eigen::VectorXd teach = dataSet.teachSet.row(n);
 			error = learnProccess(structure, input, teach, ofs);
 			//		error = learnProccess(input, teach);
 		}
 	}
+	test(structure, ofs);
 	ofs.close();
 	std::cout << std::endl;
 	return error;
@@ -372,16 +421,10 @@ int main()
 					correct++;
 				}
 			}
-			ofs2 << correct << " / " << TRIALS_PER_STRUCTURE << " success" << std::endl;
+			ofs2 << correct << ", /, " << TRIALS_PER_STRUCTURE << ", success" << std::endl;
 			std::cout << correct << " / " << TRIALS_PER_STRUCTURE << " success" << std::endl;
 		}
 		ofs2.close();
 	}
-	//	for (int i = 0; i < dataSet.dataSet.rows(); ++i)
-	//	{
-	//		std::cout << i << ";" << std::endl;
-	//		std::cout << a[i] << std::endl;
-	//	}
-	//	test();
 	return 0;
 }
