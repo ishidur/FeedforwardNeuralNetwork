@@ -94,10 +94,10 @@ MNISTDataSet::MNISTDataSet()
 
 void MNISTDataSet::load()
 {
-	dataSet = readImageFile(TEST_IMAGE_PATH);
-	teachSet = readLabelFile(TEST_LABEL_PATH);
-	//	dataSet = readImageFile(TRAIN_IMAGE_PATH);
-	//	teachSet = readLabelFile(TRAIN_LABEL_PATH);
+	//	dataSet = readImageFile(TEST_IMAGE_PATH);
+	//	teachSet = readLabelFile(TEST_LABEL_PATH);
+	dataSet = readImageFile(TRAIN_IMAGE_PATH);
+	teachSet = readLabelFile(TRAIN_LABEL_PATH);
 	testDataSet = readImageFile(TEST_IMAGE_PATH);
 	testTeachSet = readLabelFile(TEST_LABEL_PATH);
 }

@@ -16,25 +16,24 @@
 #include "MNISTDataSet.h"
 #include <numeric>
 
-//#define TRIALS_PER_STRUCTURE 10
-#define TRIALS_PER_STRUCTURE 1
-#define LEARNING_RATE 0.7
-#define LEARNING_TIME 1
-//#define LEARNING_TIME 10000
+#define TRIALS_PER_STRUCTURE 5
+#define LEARNING_RATE 1.0
+//#define LEARNING_TIME 1
+#define LEARNING_TIME 100000
 #define ERROR_BOTTOM 0.01
 
-std::vector<double> initVals = {2.0};
-//vector<double> initVals = {0.3, 1.0, 2.0};
+//std::vector<double> initVals = {2.0};
+std::vector<double> initVals = {0.001, 0.01, 0.1};
 //dataset
-MNISTDataSet dataSet;
+XORDataSet dataSet;
 
 //Network structure.
-std::vector<std::vector<int>> structures = {{784, 100, 10}};
-//vector<vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
+//std::vector<std::vector<int>> structures = {{784, 100, 10}, {784, 100, 100, 10}, {784, 100, 100, 100, 10}};
+std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
 
-bool useSoftmax = true;
+bool useSoftmax = false;
 
 void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 {
@@ -222,7 +221,8 @@ double validate(std::vector<int> structure)
 
 void test(std::vector<int> structure, std::ostream& out = std::cout)
 {
-	int correct = 0;
+	int correct[10] = {0};
+	int num[10] = {0};
 	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	{
 		//	feedforward proccess
@@ -256,12 +256,17 @@ void test(std::vector<int> structure, std::ostream& out = std::cout)
 		out << "answer, " << "output" << std::endl;
 		out << std::distance(y.begin(), result) << ", " << std::distance(t.begin(), teach) << std::endl;
 		std::cout << std::distance(y.begin(), result) << ", " << std::distance(t.begin(), teach) << std::endl;
-		if (std::distance(y.begin(), result) == std::distance(t.begin(), teach))
+		int a = std::distance(t.begin(), teach);
+		num[a]++;
+		if (std::distance(y.begin(), result) == a)
 		{
-			correct++;
+			correct[a]++;
 		}
 	}
-	out << std::endl << "correct, " << correct << ", /, " << dataSet.testDataSet.rows() << std::endl;
+	for (int i = 0; i < 10; ++i)
+	{
+		out << std::endl << "correct, " << correct[i] << ", /, " << num[i] << std::endl;
+	}
 }
 
 double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::VectorXd teachData, std::ostream& out = std::cout)
@@ -287,24 +292,26 @@ double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::V
 	//	backpropergation method
 	backpropergation(structure, outputs, teachData);
 
-	for (int i = 0; i < structure.size() - 1; ++i)
+	//	double error = errorFunc(outputs[structure.size() - 1], teachData);
+	double error = validate(structure);
+	if (&out != &std::cout)
 	{
-		for (int j = 0; j < weights[i].rows(); ++j)
+		for (int i = 0; i < structure.size() - 1; ++i)
 		{
-			for (int k = 0; k < weights[i].cols(); ++k)
+			for (int j = 0; j < weights[i].rows(); ++j)
 			{
-				out << weights[i](j, k) << ", ";
+				for (int k = 0; k < weights[i].cols(); ++k)
+				{
+					out << weights[i](j, k) << ", ";
+				}
+			}
+			for (int j = 0; j < biases[i].size(); ++j)
+			{
+				out << biases[i][j] << ", ";
 			}
 		}
-		for (int j = 0; j < biases[i].size(); ++j)
-		{
-			out << biases[i][j] << ", ";
-		}
+		out << error << std::endl;
 	}
-
-	double error = 0.0;
-	//	double error = validate(structure);
-	//	out << error << std::endl;
 	return error;
 }
 
@@ -313,7 +320,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 	initWeightsAndBiases(structure, initVal);
 	//	int a[dataSet.dataSet.rows()] = {0};
 
-	std::ofstream ofs(filename);
+	std::ofstream ofs(filename + ".csv");
 	for (int i = 0; i < structure.size() - 1; ++i)
 	{
 		for (int j = 0; j < weights[i].rows(); ++j)
@@ -331,6 +338,10 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 	ofs << "error" << std::endl;
 	//	std::string progress = "";
 	double error = 1.0;
+
+	int s = 0;
+	std::string progress = "";
+
 	//	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
 	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
@@ -340,29 +351,35 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 		//			progress += "#";
 		//		}
 		//		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " << progress << "\r" << std::flush;
-		std::string progress = "";
-		int s = 0;
 		std::vector<int> ns(dataSet.dataSet.rows());
 		iota(ns.begin(), ns.end(), 0);
 		shuffle(ns.begin(), ns.end(), std::mt19937());
 		for (int n : ns)
 		{
 			s++;
-			double status = double((s) * 100.0 / (ns.size()));
+			double status = double((s) * 100.0 / (ns.size() * LEARNING_TIME));
 			if (progress.size() < int(status) / 5)
 			{
 				progress += "#";
 			}
-			std::cout << "progress: " << s << "/ " << (ns.size()) << " " << progress << "\r" << std::flush;
+			std::cout << "progress: " << s << "/ " << (ns.size() * LEARNING_TIME) << " " << progress << "\r" << std::flush;
 
 			Eigen::VectorXd input = dataSet.dataSet.row(n);
 			Eigen::VectorXd teach = dataSet.teachSet.row(n);
-			error = learnProccess(structure, input, teach, ofs);
-			//		error = learnProccess(input, teach);
+			if (s % ns.size() == 0)
+			{
+				error = learnProccess(structure, input, teach, ofs);
+			}
+			else
+			{
+				error = learnProccess(structure, input, teach);
+			}
 		}
 	}
-	test(structure, ofs);
 	ofs.close();
+	//	std::ofstream ofs2(filename + "-test" + ".csv");
+	//	test(structure, ofs2);
+	//	ofs2.close();
 	std::cout << std::endl;
 	return error;
 }
@@ -374,7 +391,7 @@ int main()
 	{
 		std::string dirName = "data\\";
 		std::ostringstream sout;
-		sout << std::fixed << std::setprecision(1) << init_val;
+		sout << std::fixed << init_val;
 		std::string s = sout.str();
 		dirName += s;
 		dirName += "\\";
@@ -410,7 +427,6 @@ int main()
 				fileName += std::to_string(structure.size()) + "-layers-";
 				fileName += layers;
 				fileName += "-" + std::to_string(epoch_time);
-				fileName += ".csv";
 				ofs2 << "file, " << fileName << std::endl;
 				std::cout << fileName << std::endl;
 				double err = singleRun(structure, init_val, fileName);
