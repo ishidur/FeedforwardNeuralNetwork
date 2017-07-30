@@ -14,18 +14,21 @@
 #include <ppl.h>
 #include "XORDataSet.h"
 #include "MNISTDataSet.h"
+#include "TwoSpiralDataSet.h"
 #include <numeric>
 
-#define TRIALS_PER_STRUCTURE 5
+#define TRIALS_PER_STRUCTURE 1
 #define LEARNING_RATE 1.0
 //#define LEARNING_TIME 1
-#define LEARNING_TIME 100000
-#define ERROR_BOTTOM 0.01
+#define LEARNING_TIME 10
+#define ERROR_BOTTOM 0.0001
 
-//std::vector<double> initVals = {2.0};
-std::vector<double> initVals = {0.001, 0.01, 0.1};
+std::vector<double> initVals = {1.0};
+//std::vector<double> initVals = {0.001, 0.01, 0.1};
 //dataset
-XORDataSet dataSet;
+//XORDataSet dataSet;
+//MNISTDataSet dataSet;
+TwoSpiralDataSet dataSet;
 
 //Network structure.
 //std::vector<std::vector<int>> structures = {{784, 100, 10}, {784, 100, 100, 10}, {784, 100, 100, 100, 10}};
@@ -33,6 +36,7 @@ std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2,
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
 
+//bool useSoftmax = true;
 bool useSoftmax = false;
 
 void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
@@ -120,6 +124,7 @@ double errorFunc(Eigen::VectorXd outData, Eigen::VectorXd teachData)
 	double error;
 	if (useSoftmax)
 	{
+		//		Cross Entropy
 		Eigen::VectorXd v1 = outData.unaryExpr(cross);
 		Eigen::VectorXd v2 = teachData;
 		error = -v2.dot(v1);
@@ -219,7 +224,7 @@ double validate(std::vector<int> structure)
 	return error;
 }
 
-void test(std::vector<int> structure, std::ostream& out = std::cout)
+void MNISTtest(std::vector<int> structure, std::ostream& out = std::cout)
 {
 	int correct[10] = {0};
 	int num[10] = {0};
@@ -248,11 +253,15 @@ void test(std::vector<int> structure, std::ostream& out = std::cout)
 		Eigen::VectorXd::Map(&y[0], outputs[structure.size() - 1].size()) = outputs[structure.size() - 1];
 		std::vector<double>::iterator result = std::max_element(y.begin(), y.end());
 		std::vector<double> t;
-		t.resize(outputs[structure.size() - 1].size());
+		t.resize(dataSet.testTeachSet.row(i).size());
 		Eigen::VectorXd::Map(&t[0], dataSet.testTeachSet.row(i).size()) = dataSet.testTeachSet.row(i);
 		std::vector<double>::iterator teach = std::max_element(t.begin(), t.end());
 		//		out << "input, " << std::endl;
 		//		out << dataSet.testDataSet.row(i) << std::endl;
+		if (i == 0)
+		{
+			out << outputs[structure.size() - 1].transpose() << std::endl;
+		}
 		out << "answer, " << "output" << std::endl;
 		out << std::distance(y.begin(), result) << ", " << std::distance(t.begin(), teach) << std::endl;
 		std::cout << std::distance(y.begin(), result) << ", " << std::distance(t.begin(), teach) << std::endl;
@@ -265,7 +274,7 @@ void test(std::vector<int> structure, std::ostream& out = std::cout)
 	}
 	for (int i = 0; i < 10; ++i)
 	{
-		out << std::endl << "correct, " << correct[i] << ", /, " << num[i] << std::endl;
+		out << std::endl << i << "correct, " << correct[i] << ", /, " << num[i] << std::endl;
 	}
 }
 
@@ -296,20 +305,20 @@ double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::V
 	double error = validate(structure);
 	if (&out != &std::cout)
 	{
-		for (int i = 0; i < structure.size() - 1; ++i)
-		{
-			for (int j = 0; j < weights[i].rows(); ++j)
-			{
-				for (int k = 0; k < weights[i].cols(); ++k)
-				{
-					out << weights[i](j, k) << ", ";
-				}
-			}
-			for (int j = 0; j < biases[i].size(); ++j)
-			{
-				out << biases[i][j] << ", ";
-			}
-		}
+		//		for (int i = 0; i < structure.size() - 1; ++i)
+		//		{
+		//			for (int j = 0; j < weights[i].rows(); ++j)
+		//			{
+		//				for (int k = 0; k < weights[i].cols(); ++k)
+		//				{
+		//					out << weights[i](j, k) << ", ";
+		//				}
+		//			}
+		//			for (int j = 0; j < biases[i].size(); ++j)
+		//			{
+		//				out << biases[i][j] << ", ";
+		//			}
+		//		}
 		out << error << std::endl;
 	}
 	return error;
@@ -321,20 +330,20 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 	//	int a[dataSet.dataSet.rows()] = {0};
 
 	std::ofstream ofs(filename + ".csv");
-	for (int i = 0; i < structure.size() - 1; ++i)
-	{
-		for (int j = 0; j < weights[i].rows(); ++j)
-		{
-			for (int k = 0; k < weights[i].cols(); ++k)
-			{
-				ofs << "weight:" << "l:" << i << ":" << j << ":" << k << ", ";
-			}
-		}
-		for (int j = 0; j < biases[i].size(); ++j)
-		{
-			ofs << "bias:" << "l:" << i << ":" << j << ", ";
-		}
-	}
+	//	for (int i = 0; i < structure.size() - 1; ++i)
+	//	{
+	//		for (int j = 0; j < weights[i].rows(); ++j)
+	//		{
+	//			for (int k = 0; k < weights[i].cols(); ++k)
+	//			{
+	//				ofs << "weight:" << "l:" << i << ":" << j << ":" << k << ", ";
+	//			}
+	//		}
+	//		for (int j = 0; j < biases[i].size(); ++j)
+	//		{
+	//			ofs << "bias:" << "l:" << i << ":" << j << ", ";
+	//		}
+	//	}
 	ofs << "error" << std::endl;
 	//	std::string progress = "";
 	double error = 1.0;
@@ -378,7 +387,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 	}
 	ofs.close();
 	//	std::ofstream ofs2(filename + "-test" + ".csv");
-	//	test(structure, ofs2);
+	//	MNISTtest(structure, ofs2);
 	//	ofs2.close();
 	std::cout << std::endl;
 	return error;
