@@ -17,27 +17,43 @@
 #include "TwoSpiralDataSet.h"
 #include <numeric>
 
-#define TRIALS_PER_STRUCTURE 1
-#define LEARNING_RATE 1.0
-//#define LEARNING_TIME 1
-#define LEARNING_TIME 10
-#define ERROR_BOTTOM 0.0001
-
-std::vector<double> initVals = {1.0};
+//XOR
 //std::vector<double> initVals = {0.001, 0.01, 0.1};
+std::vector<double> initVals = {0.01};
+#define TRIALS_PER_STRUCTURE 5
+#define LEARNING_RATE 1.0
+#define LEARNING_TIME 100000
+#define ERROR_BOTTOM 0.0001
 //dataset
-//XORDataSet dataSet;
-//MNISTDataSet dataSet;
-TwoSpiralDataSet dataSet;
+XORDataSet dataSet;
+//Network structure.
+//std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
+std::vector<std::vector<int>> structures = {{2, 3, 3, 3, 1}};
+bool useSoftmax = false;
 
+//MNIST
+//std::vector<double> initVals = {1.0};
+//#define TRIALS_PER_STRUCTURE 1
+//#define LEARNING_RATE 1.0
+//#define LEARNING_TIME 1
+//#define ERROR_BOTTOM 0.0001
+//MNISTDataSet dataSet;
 //Network structure.
 //std::vector<std::vector<int>> structures = {{784, 100, 10}, {784, 100, 100, 10}, {784, 100, 100, 100, 10}};
-std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
+//bool useSoftmax = true;
+
+//TwoSpiral Prpblem
+//std::vector<double> initVals = {0.1};
+//#define TRIALS_PER_STRUCTURE 5
+//#define LEARNING_RATE 1.0
+//#define LEARNING_TIME 10
+//#define ERROR_BOTTOM 0.0001
+//TwoSpiralDataSet dataSet;
+//std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
+//bool useSoftmax = false;
+
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
-
-//bool useSoftmax = true;
-bool useSoftmax = false;
 
 void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 {
@@ -47,60 +63,19 @@ void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 	{
 		weights.push_back(Eigen::MatrixXd::Random(structure[i - 1], structure[i]) * iniitalVal);
 		biases.push_back(Eigen::VectorXd::Random(structure[i]) * iniitalVal);
+		//		biases.push_back(Eigen::VectorXd::Zero(structure[i]));
 	}
 }
 
-auto relu = [](const double input)
-{
-	if (input < 0.0)
-	{
-		return 0.0;
-	}
-	return input;
-};
-
-Eigen::VectorXd Relu(Eigen::VectorXd inputs)
-{
-	return inputs.unaryExpr(relu);
-}
-
-auto tanhype = [](const double input)
-{
-	return tanh(input);
-};
-
-Eigen::VectorXd Tanh(Eigen::VectorXd inputs)
-{
-	return inputs.unaryExpr(tanhype);
-}
-
-auto sigm = [](const double input)
-{
-	return 1.0 / (1 + exp(-input));
-};
-
-Eigen::VectorXd sigmoid(Eigen::VectorXd inputs)
-{
-	return inputs.unaryExpr(sigm);
-}
+Eigen::VectorXd Relu(Eigen::VectorXd inputs);
+Eigen::VectorXd Tanh(Eigen::VectorXd inputs);
+Eigen::VectorXd sigmoid(Eigen::VectorXd inputs);
+Eigen::VectorXd softmax(Eigen::VectorXd inputs);
 
 Eigen::VectorXd activationFunc(Eigen::VectorXd inputs)
 {
 	Eigen::VectorXd result = sigmoid(inputs);
 	return result;
-}
-
-auto soft = [](const double x)
-{
-	return exp(x);
-};
-
-Eigen::VectorXd softmax(Eigen::VectorXd inputs)
-{
-	Eigen::VectorXd a = inputs.unaryExpr(soft);
-	double s = a.sum();
-	Eigen::VectorXd b = a / s;
-	return b;
 }
 
 Eigen::VectorXd differential(Eigen::VectorXd input)
@@ -305,20 +280,20 @@ double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::V
 	double error = validate(structure);
 	if (&out != &std::cout)
 	{
-		//		for (int i = 0; i < structure.size() - 1; ++i)
-		//		{
-		//			for (int j = 0; j < weights[i].rows(); ++j)
-		//			{
-		//				for (int k = 0; k < weights[i].cols(); ++k)
-		//				{
-		//					out << weights[i](j, k) << ", ";
-		//				}
-		//			}
-		//			for (int j = 0; j < biases[i].size(); ++j)
-		//			{
-		//				out << biases[i][j] << ", ";
-		//			}
-		//		}
+		for (int i = 0; i < structure.size() - 1; ++i)
+		{
+			for (int j = 0; j < weights[i].rows(); ++j)
+			{
+				for (int k = 0; k < weights[i].cols(); ++k)
+				{
+					out << weights[i](j, k) << ", ";
+				}
+			}
+			for (int j = 0; j < biases[i].size(); ++j)
+			{
+				out << biases[i][j] << ", ";
+			}
+		}
 		out << error << std::endl;
 	}
 	return error;
@@ -330,20 +305,20 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 	//	int a[dataSet.dataSet.rows()] = {0};
 
 	std::ofstream ofs(filename + ".csv");
-	//	for (int i = 0; i < structure.size() - 1; ++i)
-	//	{
-	//		for (int j = 0; j < weights[i].rows(); ++j)
-	//		{
-	//			for (int k = 0; k < weights[i].cols(); ++k)
-	//			{
-	//				ofs << "weight:" << "l:" << i << ":" << j << ":" << k << ", ";
-	//			}
-	//		}
-	//		for (int j = 0; j < biases[i].size(); ++j)
-	//		{
-	//			ofs << "bias:" << "l:" << i << ":" << j << ", ";
-	//		}
-	//	}
+	for (int i = 0; i < structure.size() - 1; ++i)
+	{
+		for (int j = 0; j < weights[i].rows(); ++j)
+		{
+			for (int k = 0; k < weights[i].cols(); ++k)
+			{
+				ofs << "weight:" << "l:" << i << ":" << j << ":" << k << ", ";
+			}
+		}
+		for (int j = 0; j < biases[i].size(); ++j)
+		{
+			ofs << "bias:" << "l:" << i << ":" << j << ", ";
+		}
+	}
 	ofs << "error" << std::endl;
 	//	std::string progress = "";
 	double error = 1.0;
@@ -351,8 +326,8 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 	int s = 0;
 	std::string progress = "";
 
-	//	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
-	for (int i = 0; i < LEARNING_TIME; ++i)
+	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
+	//	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
 		//		double status = double((i + 1) * 100.0 / (LEARNING_TIME));
 		//		if (progress.size() < int(status) / 5)
@@ -371,7 +346,6 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 			{
 				progress += "#";
 			}
-			std::cout << "progress: " << s << "/ " << (ns.size() * LEARNING_TIME) << " " << progress << "\r" << std::flush;
 
 			Eigen::VectorXd input = dataSet.dataSet.row(n);
 			Eigen::VectorXd teach = dataSet.teachSet.row(n);
@@ -383,6 +357,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 			{
 				error = learnProccess(structure, input, teach);
 			}
+			std::cout << "progress: " << error << ", " << s << "/ " << (ns.size() * LEARNING_TIME) << " " << progress << "\r" << std::flush;
 		}
 	}
 	ofs.close();
@@ -395,6 +370,14 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 
 int main()
 {
+	FILE *fp = _popen("gnuplot", "w");
+	if (fp == nullptr)
+		return -1;
+	fputs("plot sin(x)\n", fp);
+	fflush(fp);
+	std::cin.get();
+	_pclose(fp);
+	return 0;
 	dataSet.load();
 	for (double init_val : initVals)
 	{
@@ -452,4 +435,51 @@ int main()
 		ofs2.close();
 	}
 	return 0;
+}
+
+auto relu = [](const double input)
+{
+	if (input < 0.0)
+	{
+		return 0.0;
+	}
+	return input;
+};
+
+Eigen::VectorXd Relu(Eigen::VectorXd inputs)
+{
+	return inputs.unaryExpr(relu);
+}
+
+auto tanhype = [](const double input)
+{
+	return tanh(input);
+};
+
+Eigen::VectorXd Tanh(Eigen::VectorXd inputs)
+{
+	return inputs.unaryExpr(tanhype);
+}
+
+auto sigm = [](const double input)
+{
+	return 1.0 / (1 + exp(-input));
+};
+
+Eigen::VectorXd sigmoid(Eigen::VectorXd inputs)
+{
+	return inputs.unaryExpr(sigm);
+}
+
+auto soft = [](const double x)
+{
+	return exp(x);
+};
+
+Eigen::VectorXd softmax(Eigen::VectorXd inputs)
+{
+	Eigen::VectorXd a = inputs.unaryExpr(soft);
+	double s = a.sum();
+	Eigen::VectorXd b = a / s;
+	return b;
 }
