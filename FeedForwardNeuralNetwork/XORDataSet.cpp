@@ -14,10 +14,10 @@ void XORDataSet::load()
 		0, 1,
 		1, 0,
 		1, 1;
-	teachSet << 0,
-		1,
-		1,
-		0;
+	teachSet << 0.05,
+		0.95,
+		0.95,
+		0.05;
 	testDataSet = dataSet;
 	testTeachSet = teachSet;
 }

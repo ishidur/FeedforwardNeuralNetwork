@@ -20,7 +20,7 @@
 #define LEARNING_RATE 1.0
 //#define LEARNING_TIME 1
 #define LEARNING_TIME 100000
-#define ERROR_BOTTOM 0.01
+#define ERROR_BOTTOM 0.0001
 
 //std::vector<double> initVals = {2.0};
 std::vector<double> initVals = {0.001, 0.01, 0.1};
@@ -72,7 +72,16 @@ Eigen::VectorXd Tanh(Eigen::VectorXd inputs)
 
 auto sigm = [](const double input)
 {
-	return 1.0 / (1 + exp(-input));
+	double y = 1.0 / (1 + exp(-input));
+	if (y > 0.95)
+	{
+		y = 0.95;
+	}
+	else if (y < 0.05)
+	{
+		y = 0.05;
+	}
+	return y;
 };
 
 Eigen::VectorXd sigmoid(Eigen::VectorXd inputs)
@@ -342,8 +351,8 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 	int s = 0;
 	std::string progress = "";
 
-	//	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
-	for (int i = 0; i < LEARNING_TIME; ++i)
+	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
+	//	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
 		//		double status = double((i + 1) * 100.0 / (LEARNING_TIME));
 		//		if (progress.size() < int(status) / 5)
