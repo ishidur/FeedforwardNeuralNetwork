@@ -17,21 +17,22 @@
 #include "TwoSpiralDataSet.h"
 #include <numeric>
 
-#define OUTPUTDATANUM 10000
+#define SLIDE 100
 
 //XOR
 //std::vector<double> initVals = {0.001, 0.01, 0.1};
 std::vector<double> initVals = {0.01};
-#define TRIALS_PER_STRUCTURE 2
+#define TRIALS_PER_STRUCTURE 5
 #define LEARNING_RATE 1.0
-#define MOMENT 0.9
+#define MOMENT 0.0
 #define LEARNING_TIME 1000000
 #define ERROR_BOTTOM 0.0001
 //dataset
 XORDataSet dataSet;
 //Network structure.
-std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 3, 1}, {2, 4, 1}, {2, 2, 2, 1}, {2, 3, 3, 1}, {2, 4, 4, 1}, {2, 2, 2, 2, 1}};
-//std::vector<std::vector<int>> structures = {{2, 4, 4, 4, 1}};
+//std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 3, 1}, {2, 4, 1}, {2, 5, 1}, {2, 6, 1}};
+//std::vector<std::vector<int>> structures = {{2, 2, 2, 1},{2, 3, 3, 1},{2, 4, 4, 1},{2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1}};
+std::vector<std::vector<int>> structures = {{2, 4, 4, 4, 1}};
 bool useSoftmax = false;
 
 //MNIST
@@ -58,6 +59,7 @@ bool useSoftmax = false;
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
 bool isFirst = true;
+
 void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 {
 	weights.clear();
@@ -65,8 +67,8 @@ void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 	for (int i = 1; i < structure.size(); ++i)
 	{
 		weights.push_back(Eigen::MatrixXd::Random(structure[i - 1], structure[i]) * iniitalVal);
-		biases.push_back(Eigen::VectorXd::Random(structure[i]) * iniitalVal);
-		//		biases.push_back(Eigen::VectorXd::Zero(structure[i]));
+		//		biases.push_back(Eigen::VectorXd::Random(structure[i]) * iniitalVal);
+		biases.push_back(Eigen::VectorXd::Zero(structure[i]));
 	}
 }
 
@@ -77,13 +79,19 @@ Eigen::VectorXd softmax(Eigen::VectorXd inputs);
 
 Eigen::VectorXd activationFunc(Eigen::VectorXd inputs)
 {
-	Eigen::VectorXd result = sigmoid(inputs);
+	Eigen::VectorXd result = Tanh(inputs);
 	return result;
 }
 
+Eigen::VectorXd differentialSigmoid(Eigen::VectorXd input);
+
+Eigen::VectorXd differentialTanh(Eigen::VectorXd input);
+
+Eigen::VectorXd differentialRelu(Eigen::VectorXd input);
+
 Eigen::VectorXd differential(Eigen::VectorXd input)
 {
-	Eigen::VectorXd result = input.array() * (Eigen::VectorXd::Ones(input.size()) - input).array();
+	Eigen::VectorXd result = differentialTanh(input);
 	return result;
 }
 
@@ -381,7 +389,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 
 			Eigen::VectorXd input = dataSet.dataSet.row(n);
 			Eigen::VectorXd teach = dataSet.teachSet.row(n);
-			if (s % (ns.size() * LEARNING_TIME / OUTPUTDATANUM) == 0)
+			if (s % (ns.size() * SLIDE) == 0)
 			{
 				ofs << i << ",";
 				error = learnProccess(structure, input, teach, ofs);
@@ -516,4 +524,31 @@ Eigen::VectorXd softmax(Eigen::VectorXd inputs)
 	double s = a.sum();
 	Eigen::VectorXd b = a / s;
 	return b;
+}
+
+Eigen::VectorXd differentialSigmoid(Eigen::VectorXd input)
+{
+	Eigen::VectorXd result = input.array() * (Eigen::VectorXd::Ones(input.size()) - input).array();
+	return result;
+}
+
+Eigen::VectorXd differentialTanh(Eigen::VectorXd input)
+{
+	Eigen::VectorXd result = Eigen::VectorXd::Ones(input.size()).array() - input.array() * input.array();
+	return result;
+}
+
+auto diffRelu = [](const double input)
+{
+	if (input < 0.0)
+	{
+		return 0.0;
+	}
+	return 1.0;
+};
+
+Eigen::VectorXd differentialRelu(Eigen::VectorXd input)
+{
+	Eigen::VectorXd result = input.unaryExpr(relu);
+	return result;
 }
