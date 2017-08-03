@@ -24,7 +24,7 @@
 std::vector<double> initVals = {0.01};
 #define TRIALS_PER_STRUCTURE 5
 #define LEARNING_RATE 1.0
-#define MOMENT 0.0
+#define MOMENT 0.9
 #define LEARNING_TIME 1000000
 #define ERROR_BOTTOM 0.0001
 //dataset
@@ -79,19 +79,17 @@ Eigen::VectorXd softmax(Eigen::VectorXd inputs);
 
 Eigen::VectorXd activationFunc(Eigen::VectorXd inputs)
 {
-	Eigen::VectorXd result = Tanh(inputs);
+	Eigen::VectorXd result = sigmoid(inputs);
 	return result;
 }
 
 Eigen::VectorXd differentialSigmoid(Eigen::VectorXd input);
-
 Eigen::VectorXd differentialTanh(Eigen::VectorXd input);
-
 Eigen::VectorXd differentialRelu(Eigen::VectorXd input);
 
 Eigen::VectorXd differential(Eigen::VectorXd input)
 {
-	Eigen::VectorXd result = differentialTanh(input);
+	Eigen::VectorXd result = differentialSigmoid(input);
 	return result;
 }
 
@@ -366,7 +364,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 	int s = 0;
 	std::string progress = "";
 
-	for (int i = 0; i < LEARNING_TIME && error > ERROR_BOTTOM; ++i)
+	for (int i = 0; i < LEARNING_TIME; ++i)
 	//	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
 		//		double status = double((i + 1) * 100.0 / (LEARNING_TIME));
@@ -393,6 +391,10 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 			{
 				ofs << i << ",";
 				error = learnProccess(structure, input, teach, ofs);
+				if (error < ERROR_BOTTOM)
+				{
+					goto learn_end;
+				}
 			}
 			else
 			{
@@ -401,6 +403,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 			std::cout << "progress: " << error << ", " << s << "/ " << (ns.size() * LEARNING_TIME) << " " << progress << "\r" << std::flush;
 		}
 	}
+learn_end:
 	ofs.close();
 	//	std::ofstream ofs2(filename + "-test" + ".csv");
 	//	MNISTtest(structure, ofs2);
