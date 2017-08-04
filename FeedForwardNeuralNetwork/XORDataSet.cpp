@@ -21,5 +21,3 @@ void XORDataSet::load()
 	testDataSet = dataSet;
 	testTeachSet = teachSet;
 }
-
-
