@@ -2,6 +2,7 @@
 class TwoSpiralDataSet
 {
 public:
+	bool useSoftmax = false;
 	Eigen::MatrixXd dataSet;
 	Eigen::MatrixXd teachSet;
 	Eigen::MatrixXd testDataSet;
@@ -10,4 +11,3 @@ public:
 	TwoSpiralDataSet();
 	void load();
 };
-

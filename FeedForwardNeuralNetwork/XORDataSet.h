@@ -2,6 +2,7 @@
 class XORDataSet
 {
 public:
+	bool useSoftmax = false;
 	Eigen::MatrixXd dataSet;
 	Eigen::MatrixXd teachSet;
 	Eigen::MatrixXd testDataSet;

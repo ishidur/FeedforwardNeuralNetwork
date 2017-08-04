@@ -1,7 +1,9 @@
 #pragma once
+
 class FuncApproxDataSet
 {
 public:
+	const bool useSoftmax = false;
 	Eigen::MatrixXd dataSet;
 	Eigen::MatrixXd teachSet;
 	Eigen::MatrixXd testDataSet;
@@ -10,5 +12,5 @@ public:
 	FuncApproxDataSet();
 	void load();
 	void show();
+	void update(Eigen::VectorXd outputs);
 };
-

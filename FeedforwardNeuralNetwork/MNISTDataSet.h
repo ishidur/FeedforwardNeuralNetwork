@@ -8,6 +8,7 @@
 class MNISTDataSet
 {
 public:
+	bool useSoftmax = true;
 	Eigen::MatrixXd dataSet;
 	Eigen::MatrixXd teachSet;
 	Eigen::MatrixXd testDataSet;

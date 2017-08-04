@@ -35,20 +35,18 @@
 ////Network structure.
 ////std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 3, 1}, {2, 4, 1}};
 //std::vector<std::vector<int>> structures = {{2, 2, 2, 1},{2, 3, 3, 1},{2, 4, 4, 1},{2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1}};
-//bool useSoftmax = false;
 
 //Function approximation
 std::vector<double> initVals = {0.01};
 #define TRIALS_PER_STRUCTURE 1
-#define LEARNING_RATE 1.0
+#define LEARNING_RATE 0.03
 #define LEARNING_TIME 100
-#define ERROR_BOTTOM 0.01
+#define ERROR_BOTTOM 0.00000001
 //dataset
 FuncApproxDataSet dataSet;
 //Network structure.
-std::vector<std::vector<int>> structures = {{1, 6, 1}};
+std::vector<std::vector<int>> structures = {{1, 10, 1}};
 //std::vector<std::vector<int>> structures = {{1, 2, 1}, {1, 3, 1}, {1, 4, 1}};
-bool useSoftmax = false;
 
 //MNIST
 //std::vector<double> initVals = {1.0};
@@ -59,7 +57,6 @@ bool useSoftmax = false;
 //MNISTDataSet dataSet;
 //Network structure.
 //std::vector<std::vector<int>> structures = {{784, 100, 10}, {784, 100, 100, 10}, {784, 100, 100, 100, 10}};
-//bool useSoftmax = true;
 
 //TwoSpiral Prpblem
 //std::vector<double> initVals = {0.1};
@@ -70,6 +67,38 @@ bool useSoftmax = false;
 //TwoSpiralDataSet dataSet;
 //std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
 //bool useSoftmax = false;
+
+Eigen::VectorXd activationFunc(Eigen::VectorXd inputs)
+{
+	Eigen::VectorXd result = sigmoid(inputs);
+	return result;
+}
+
+Eigen::VectorXd differential(Eigen::VectorXd input)
+{
+	Eigen::VectorXd result = differentialSigmoid(input);
+	return result;
+}
+
+Eigen::VectorXd outputActivationFunc(Eigen::VectorXd inputs)
+{
+	if (dataSet.useSoftmax)
+	{
+		return softmax(inputs);
+	}
+	return inputs;
+	//	return activationFunc(inputs);
+}
+
+Eigen::VectorXd outputDifferential(Eigen::VectorXd input)
+{
+	if (dataSet.useSoftmax)
+	{
+		return Eigen::VectorXd::Ones(input.size());
+	}
+	return Eigen::VectorXd::Ones(input.size());
+	//	return differential(input);
+}
 
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
@@ -86,19 +115,6 @@ void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 	}
 }
 
-Eigen::VectorXd activationFunc(Eigen::VectorXd inputs)
-{
-	Eigen::VectorXd result = sigmoid(inputs);
-	return result;
-}
-
-
-Eigen::VectorXd differential(Eigen::VectorXd input)
-{
-	Eigen::VectorXd result = differentialSigmoid(input);
-	return result;
-}
-
 auto squared = [](const double x)
 {
 	return x * x;
@@ -112,7 +128,7 @@ auto cross = [](const double x)
 double errorFunc(Eigen::VectorXd outData, Eigen::VectorXd teachData)
 {
 	double error;
-	if (useSoftmax)
+	if (dataSet.useSoftmax)
 	{
 		//		Cross Entropy
 		Eigen::VectorXd v1 = outData.unaryExpr(cross);
@@ -139,17 +155,8 @@ Eigen::MatrixXd calcDelta(std::vector<int> structure, int layerNo, std::vector<E
 
 void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> output, Eigen::VectorXd teachData)
 {
-	Eigen::VectorXd diff = differential(output[structure.size() - 1]);
-	Eigen::MatrixXd delta;
-
-	if (useSoftmax)
-	{
-		delta = (output[structure.size() - 1] - teachData).transpose();
-	}
-	else
-	{
-		delta = (output[structure.size() - 1] - teachData).transpose().array() * diff.transpose().array();
-	}
+	Eigen::VectorXd diff = outputDifferential(output[structure.size() - 1]);
+	Eigen::MatrixXd delta = (output[structure.size() - 1] - teachData).transpose().array() * diff.transpose().array();
 	weights[structure.size() - 2] -= LEARNING_RATE * output[structure.size() - 2] * delta;
 	biases[structure.size() - 2] -= LEARNING_RATE * delta.transpose();
 	for (int i = 3; i <= structure.size(); ++i)
@@ -161,10 +168,13 @@ void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> o
 	}
 }
 
-double validate(std::vector<int> structure)
+double validate(std::vector<int> structure, bool show = false)
 {
 	double error = 0.0;
-	Concurrency::parallel_for<int>(0, dataSet.testDataSet.rows(), 1, [&error, structure](int i)
+	Eigen::VectorXd outs = Eigen::VectorXd::Zero(dataSet.testDataSet.rows());
+	std::mutex mtx;
+
+	Concurrency::parallel_for<int>(0, dataSet.testDataSet.rows(), 1, [&error, &outs, &mtx, structure](int i)
                                {
 	                               //	feedforward proccess
 	                               std::vector<Eigen::VectorXd> outputs;
@@ -174,9 +184,9 @@ double validate(std::vector<int> structure)
 	                               {
 		                               Eigen::VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
 		                               Eigen::VectorXd output;
-		                               if (useSoftmax && j == structure.size() - 2)
+		                               if (j == structure.size() - 2)
 		                               {
-			                               output = softmax(inputs);
+			                               output = outputActivationFunc(inputs);
 		                               }
 		                               else
 		                               {
@@ -184,10 +194,17 @@ double validate(std::vector<int> structure)
 		                               }
 		                               outputs.push_back(output);
 	                               }
-
+	                               mtx.lock();
+	                               outs[i] = outputs[structure.size() - 1].sum();
+	                               mtx.unlock();
 	                               Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
 	                               error += errorFunc(outputs[structure.size() - 1], teach);
                                });
+
+	if (show && typeid(dataSet) == typeid(FuncApproxDataSet))
+	{
+		dataSet.update(outs);
+	}
 	//	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	//	{
 	//		//	feedforward proccess
@@ -229,9 +246,10 @@ void Softmaxtest(std::vector<int> structure, std::ostream& out = std::cout)
 		{
 			Eigen::VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
 			Eigen::VectorXd output;
-			if (useSoftmax && j == structure.size() - 2)
+			if (j == structure.size() - 2)
 			{
-				output = softmax(inputs);
+				output = outputActivationFunc(inputs);
+
 			}
 			else
 			{
@@ -269,7 +287,7 @@ void Softmaxtest(std::vector<int> structure, std::ostream& out = std::cout)
 	}
 }
 
-double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::VectorXd teachData, std::ostream& out = std::cout)
+double learnProccess(std::vector<int> structure, int iterator, Eigen::VectorXd input, Eigen::VectorXd teachData, std::ostream& out = std::cout)
 {
 	//	feedforward proccess
 	std::vector<Eigen::VectorXd> outputs;
@@ -279,9 +297,10 @@ double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::V
 	{
 		Eigen::VectorXd inputs = (outputs[i].transpose() * weights[i] + biases[i].transpose());
 		Eigen::VectorXd output;
-		if (useSoftmax && i == structure.size() - 2)
+		if (i == structure.size() - 2)
 		{
-			output = softmax(inputs);
+			output = outputActivationFunc(inputs);
+
 		}
 		else
 		{
@@ -293,7 +312,7 @@ double learnProccess(std::vector<int> structure, Eigen::VectorXd input, Eigen::V
 	backpropergation(structure, outputs, teachData);
 
 	//	double error = errorFunc(outputs[structure.size() - 1], teachData);
-	double error = validate(structure);
+	double error = validate(structure, iterator % 100 == 0);
 	if (&out != &std::cout)
 	{
 		for (int i = 0; i < structure.size() - 1; ++i)
@@ -368,7 +387,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 			if (s % (ns.size() * SLIDE) == 0)
 			{
 				ofs << i << ",";
-				error = learnProccess(structure, input, teach, ofs);
+				error = learnProccess(structure, s, input, teach, ofs);
 				if (error < ERROR_BOTTOM)
 				{
 					goto learn_end;
@@ -376,7 +395,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 			}
 			else
 			{
-				error = learnProccess(structure, input, teach);
+				error = learnProccess(structure, s, input, teach);
 			}
 			std::cout << "progress: " << error << ", " << s << "/ " << (ns.size() * LEARNING_TIME) << " " << progress << "\r" << std::flush;
 		}
@@ -392,16 +411,6 @@ learn_end:
 
 int main()
 {
-	//	FILE* fp = _popen("gnuplot", "w");
-	//	if (fp == nullptr)
-	//		return -1;
-	//	fputs("set sample 10000 \n", fp);
-	//	fputs("set xrange[-pi:pi] \n", fp);
-	//	fputs("plot cos(x)\n", fp);
-	//	fflush(fp);
-	//		std::cin.get();
-	//		_pclose(fp);
-	//	return 0;
 	dataSet.load();
 	if (typeid(dataSet) == typeid(FuncApproxDataSet))
 	{

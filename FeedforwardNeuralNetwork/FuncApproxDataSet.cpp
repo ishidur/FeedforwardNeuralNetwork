@@ -3,7 +3,7 @@
 #include <fstream>
 
 #define TRAIN_DATA_NUM 100
-#define TEST_DATA_NUM 1000
+#define TEST_DATA_NUM 200
 //y=cos(x/2)sin(8x)
 FuncApproxDataSet::FuncApproxDataSet()
 {
@@ -37,12 +37,13 @@ void FuncApproxDataSet::load()
 	}
 	ofs.close();
 }
+FILE* fp = _popen("gnuplot", "w");
 
 void FuncApproxDataSet::show()
 {
-	FILE* fp = _popen("gnuplot -persist", "w");
 	fprintf(fp, "set multiplot\n");
 	fprintf(fp, "set xrange [%f:%f]\n", -M_PI, M_PI);	// 範囲の指定
+	fprintf(fp, "set yrange [%f:%f]\n", -1.0, 1.0);	// 範囲の指定
 	fprintf(fp, "set xlabel \"x\"\n");
 	fprintf(fp, "set ylabel \"y\"\n");
 	fprintf(fp, "plot '-' with lines linetype 1\n");
@@ -55,9 +56,24 @@ void FuncApproxDataSet::show()
 		fprintf(fp, "%f\t%f\n", dataSet.col(0)[i], teachSet.col(0)[i]);
 	}
 	fprintf(fp, "e\n");
-
-	fprintf(fp, "set nomultiplot\n"); // マルチプロットモード終了
-	fprintf(fp, "exit\n"); // gnuplotの終了
+	fprintf(fp, "unset multiplot\n");
 	fflush(fp);
-	_pclose(fp);
+}
+
+void FuncApproxDataSet::update(Eigen::VectorXd outputs)
+{
+	fprintf(fp, "clear\n");
+	fprintf(fp, "set multiplot\n");
+	fprintf(fp, "plot '-' with lines linetype 1\n");
+	for (int i = 0; i < TEST_DATA_NUM; ++i) {
+		fprintf(fp, "%f\t%f\n", testDataSet.col(0)[i], testTeachSet.col(0)[i]);
+	}
+	fprintf(fp, "e\n");
+	fprintf(fp, "plot '-' with points pointtype 1\n");
+	for (int i = 0; i < TEST_DATA_NUM; ++i) {
+		fprintf(fp, "%f\t%f\n", testDataSet.col(0)[i], outputs[i]);
+	}
+	fprintf(fp, "e\n");
+	fprintf(fp, "unset multiplot\n");
+	fflush(fp);
 }
