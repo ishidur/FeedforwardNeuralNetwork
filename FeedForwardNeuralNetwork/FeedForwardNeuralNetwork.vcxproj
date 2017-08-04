@@ -138,6 +138,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FuncApproxDataSet.h" />
     <ClInclude Include="MNISTDataSet.h" />
     <ClInclude Include="parameters.h" />
     <ClInclude Include="TwoSpiralDataSet.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FuncApproxDataSet.cpp" />
     <ClCompile Include="MNISTDataSet.cpp" />
     <ClCompile Include="TwoSpiralDataSet.cpp" />
     <ClCompile Include="XORDataSet.cpp" />

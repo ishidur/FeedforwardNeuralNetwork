@@ -15,22 +15,36 @@
 #include "XORDataSet.h"
 #include "MNISTDataSet.h"
 #include "TwoSpiralDataSet.h"
+#include "FuncApproxDataSet.h"
 #include <numeric>
 
-#define SLIDE 100
+#define SLIDE 1
 
-//XOR
-//std::vector<double> initVals = {0.001, 0.01, 0.1};
+////XOR
+////std::vector<double> initVals = {0.001, 0.01, 0.1};
+//std::vector<double> initVals = {0.01};
+//#define TRIALS_PER_STRUCTURE 5
+//#define LEARNING_RATE 1.0
+//#define LEARNING_TIME 1000000
+//#define ERROR_BOTTOM 0.01
+////dataset
+//XORDataSet dataSet;
+////Network structure.
+////std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 3, 1}, {2, 4, 1}};
+//std::vector<std::vector<int>> structures = {{2, 2, 2, 1},{2, 3, 3, 1},{2, 4, 4, 1},{2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1}};
+//bool useSoftmax = false;
+
+//Function approximation
 std::vector<double> initVals = {0.01};
-#define TRIALS_PER_STRUCTURE 5
+#define TRIALS_PER_STRUCTURE 1
 #define LEARNING_RATE 1.0
-#define LEARNING_TIME 1000000
-#define ERROR_BOTTOM 0.0001
+#define LEARNING_TIME 100
+#define ERROR_BOTTOM 0.01
 //dataset
-XORDataSet dataSet;
+FuncApproxDataSet dataSet;
 //Network structure.
-//std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 3, 1}, {2, 4, 1}};
-std::vector<std::vector<int>> structures = {{2, 2, 2, 1},{2, 3, 3, 1},{2, 4, 4, 1},{2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1}};
+std::vector<std::vector<int>> structures = {{1, 6, 1}};
+//std::vector<std::vector<int>> structures = {{1, 2, 1}, {1, 3, 1}, {1, 4, 1}};
 bool useSoftmax = false;
 
 //MNIST
@@ -38,7 +52,7 @@ bool useSoftmax = false;
 //#define TRIALS_PER_STRUCTURE 1
 //#define LEARNING_RATE 1.0
 //#define LEARNING_TIME 1
-//#define ERROR_BOTTOM 0.0001
+//#define ERROR_BOTTOM 0.01
 //MNISTDataSet dataSet;
 //Network structure.
 //std::vector<std::vector<int>> structures = {{784, 100, 10}, {784, 100, 100, 10}, {784, 100, 100, 100, 10}};
@@ -49,7 +63,7 @@ bool useSoftmax = false;
 //#define TRIALS_PER_STRUCTURE 5
 //#define LEARNING_RATE 1.0
 //#define LEARNING_TIME 10
-//#define ERROR_BOTTOM 0.0001
+//#define ERROR_BOTTOM 0.01
 //TwoSpiralDataSet dataSet;
 //std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
 //bool useSoftmax = false;
@@ -203,10 +217,10 @@ double validate(std::vector<int> structure)
 	//		Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
 	//		error += errorFunc(outputs[structure.size() - 1], teach);
 	//	}
-	return error;
+	return error / dataSet.testDataSet.rows();
 }
 
-void MNISTtest(std::vector<int> structure, std::ostream& out = std::cout)
+void Softmaxtest(std::vector<int> structure, std::ostream& out = std::cout)
 {
 	int correct[10] = {0};
 	int num[10] = {0};
@@ -375,7 +389,7 @@ double singleRun(std::vector<int> structure, double initVal, std::string filenam
 learn_end:
 	ofs.close();
 	//	std::ofstream ofs2(filename + "-test" + ".csv");
-	//	MNISTtest(structure, ofs2);
+	//	Softmaxtest(structure, ofs2);
 	//	ofs2.close();
 	std::cout << std::endl;
 	return error;
@@ -386,12 +400,20 @@ int main()
 	//	FILE* fp = _popen("gnuplot", "w");
 	//	if (fp == nullptr)
 	//		return -1;
-	//	fputs("plot sin(x)\n", fp);
+	//	fputs("set sample 10000 \n", fp);
+	//	fputs("set xrange[-pi:pi] \n", fp);
+	//	fputs("plot cos(x)\n", fp);
 	//	fflush(fp);
-	//	std::cin.get();
-	//	_pclose(fp);
+	//		std::cin.get();
+	//		_pclose(fp);
 	//	return 0;
 	dataSet.load();
+	std::cout << typeid(dataSet).name() << ", " << typeid(FuncApproxDataSet).name() << std::endl;
+
+	if (typeid(dataSet) == typeid(FuncApproxDataSet))
+	{
+		dataSet.show();
+	}
 	for (double init_val : initVals)
 	{
 		std::string dirName = "data\\";
