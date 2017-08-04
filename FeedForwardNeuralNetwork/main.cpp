@@ -24,15 +24,13 @@
 std::vector<double> initVals = {0.01};
 #define TRIALS_PER_STRUCTURE 5
 #define LEARNING_RATE 1.0
-#define MOMENT 0.9
 #define LEARNING_TIME 1000000
 #define ERROR_BOTTOM 0.0001
 //dataset
 XORDataSet dataSet;
 //Network structure.
-//std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 3, 1}, {2, 4, 1}, {2, 5, 1}, {2, 6, 1}};
-//std::vector<std::vector<int>> structures = {{2, 2, 2, 1},{2, 3, 3, 1},{2, 4, 4, 1},{2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1}};
-std::vector<std::vector<int>> structures = {{2, 4, 4, 4, 1}};
+//std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 3, 1}, {2, 4, 1}};
+std::vector<std::vector<int>> structures = {{2, 2, 2, 1},{2, 3, 3, 1},{2, 4, 4, 1},{2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1}};
 bool useSoftmax = false;
 
 //MNIST
@@ -58,7 +56,6 @@ bool useSoftmax = false;
 
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
-bool isFirst = true;
 
 void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 {
@@ -130,8 +127,6 @@ Eigen::MatrixXd calcDelta(std::vector<int> structure, int layerNo, std::vector<E
 	return delta;
 }
 
-std::vector<Eigen::MatrixXd> prevWeightDelta;
-std::vector<Eigen::MatrixXd> prevBiasDelta;
 
 void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> output, Eigen::VectorXd teachData)
 {
@@ -146,40 +141,14 @@ void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> o
 	{
 		delta = (output[structure.size() - 1] - teachData).transpose().array() * diff.transpose().array();
 	}
-	if (isFirst)
+	weights[structure.size() - 2] -= LEARNING_RATE * output[structure.size() - 2] * delta;
+	biases[structure.size() - 2] -= LEARNING_RATE * delta.transpose();
+	for (int i = 3; i <= structure.size(); ++i)
 	{
-		prevWeightDelta.clear();
-		prevBiasDelta.clear();
-		prevWeightDelta.push_back(-LEARNING_RATE * output[structure.size() - 2] * delta);
-		prevBiasDelta.push_back(-LEARNING_RATE * delta);
-		weights[structure.size() - 2] -= LEARNING_RATE * output[structure.size() - 2] * delta;
-		biases[structure.size() - 2] -= LEARNING_RATE * delta.transpose();
-		for (int i = 3; i <= structure.size(); ++i)
-		{
-			int n = structure.size() - i;
-			delta = calcDelta(structure, n, output, delta);
-			prevWeightDelta.push_back(-LEARNING_RATE * output[n] * delta);
-			prevBiasDelta.push_back(-LEARNING_RATE * delta.transpose());
-			weights[n] -= LEARNING_RATE * output[n] * delta;
-			biases[n] -= LEARNING_RATE * delta.transpose();
-		}
-		isFirst = false;
-	}
-	else
-	{
-		weights[structure.size() - 2] += -LEARNING_RATE * output[structure.size() - 2] * delta + MOMENT * prevWeightDelta[0];
-		biases[structure.size() - 2] += -LEARNING_RATE * delta.transpose() + MOMENT * prevBiasDelta[0];
-		prevWeightDelta[0] = -LEARNING_RATE * output[structure.size() - 2] * delta + MOMENT * prevWeightDelta[0];
-		prevBiasDelta[0] = -LEARNING_RATE * delta.transpose() + MOMENT * prevBiasDelta[0];
-		for (int i = 3; i <= structure.size(); ++i)
-		{
-			int n = structure.size() - i;
-			delta = calcDelta(structure, n, output, delta);
-			weights[n] += -LEARNING_RATE * output[n] * delta + MOMENT * prevWeightDelta[i - 2];
-			biases[n] += -LEARNING_RATE * delta.transpose() + MOMENT * prevBiasDelta[i - 2];
-			prevWeightDelta[i - 2] = -LEARNING_RATE * output[n] * delta + MOMENT * prevWeightDelta[i - 2];
-			prevBiasDelta[i - 2] = -LEARNING_RATE * delta.transpose() + MOMENT * prevBiasDelta[i - 2];
-		}
+		int n = structure.size() - i;
+		delta = calcDelta(structure, n, output, delta);
+		weights[n] -= LEARNING_RATE * output[n] * delta;
+		biases[n] -= LEARNING_RATE * delta.transpose();
 	}
 }
 
@@ -472,7 +441,6 @@ int main()
 				{
 					correct++;
 				}
-				isFirst = true;
 			}
 			ofs2 << correct << ", /, " << TRIALS_PER_STRUCTURE << ", success" << std::endl;
 			std::cout << correct << " / " << TRIALS_PER_STRUCTURE << " success" << std::endl;
