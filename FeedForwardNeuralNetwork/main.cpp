@@ -39,13 +39,13 @@
 //Function approximation
 std::vector<double> initVals = {0.01};
 #define TRIALS_PER_STRUCTURE 1
-#define LEARNING_RATE 0.03
-#define LEARNING_TIME 100
+#define LEARNING_RATE 0.05
+#define LEARNING_TIME 10000
 #define ERROR_BOTTOM 0.00000001
 //dataset
 FuncApproxDataSet dataSet;
 //Network structure.
-std::vector<std::vector<int>> structures = {{1, 10, 1}};
+std::vector<std::vector<int>> structures = {{1, 5, 1}};
 //std::vector<std::vector<int>> structures = {{1, 2, 1}, {1, 3, 1}, {1, 4, 1}};
 
 //MNIST

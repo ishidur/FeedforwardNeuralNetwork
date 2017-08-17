@@ -2,8 +2,8 @@
 #include "FuncApproxDataSet.h"
 #include <fstream>
 
-#define TRAIN_DATA_NUM 100
-#define TEST_DATA_NUM 200
+#define TRAIN_DATA_NUM 5
+#define TEST_DATA_NUM 50
 //y=cos(x/2)sin(8x)
 FuncApproxDataSet::FuncApproxDataSet()
 {
@@ -43,7 +43,7 @@ void FuncApproxDataSet::show()
 {
 	fprintf(fp, "set multiplot\n");
 	fprintf(fp, "set xrange [%f:%f]\n", -M_PI, M_PI);	// ”ÍˆÍ‚ÌŽw’è
-	fprintf(fp, "set yrange [%f:%f]\n", -1.0, 1.0);	// ”ÍˆÍ‚ÌŽw’è
+	fprintf(fp, "set yrange [%f:%f]\n", -2.0, 2.0);	// ”ÍˆÍ‚ÌŽw’è
 	fprintf(fp, "set xlabel \"x\"\n");
 	fprintf(fp, "set ylabel \"y\"\n");
 	fprintf(fp, "plot '-' with lines linetype 1\n");
