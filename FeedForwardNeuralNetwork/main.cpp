@@ -19,7 +19,6 @@
 #include <numeric>
 using namespace std;
 using namespace Eigen;
-#define SLIDE 1
 
 Eigen::VectorXd activationFunc(Eigen::VectorXd const& inputs)
 {
@@ -70,57 +69,9 @@ void initWeightsAndBiases(std::vector<int> const& structure, double iniitalVal)
 double errorFunc(Eigen::VectorXd const& outData, Eigen::VectorXd const& teachData);
 Eigen::MatrixXd calcDelta(int layerNo, std::vector<Eigen::VectorXd> const& output, Eigen::MatrixXd const& prevDelta);
 void backpropergation(std::vector<int> const& structure, std::vector<Eigen::VectorXd> const& output, Eigen::VectorXd const& teachData);
-double validate(std::vector<int> const& structure, bool show = false);
 void Softmaxtest(std::vector<int> const& structure, std::ostream& out = std::cout);
 double learnProccess(std::vector<int> const& structure, int iterator, Eigen::VectorXd const& input, Eigen::VectorXd const& teachData, std::ostream& out = std::cout);
-double pretrainProccess(std::vector<int> const& structure, std::vector<Eigen::MatrixXd>& AEweights, std::vector<Eigen::VectorXd>& AEbiases, Eigen::VectorXd input);
-
-void pretrain(std::vector<int> const& structure)
-{
-	cout << "autoencoder" << endl;
-	const int pretrainLearningTime = LEARNING_TIME;
-	Eigen::MatrixXd inputData = dataSet.dataSet;
-	Eigen::MatrixXd middleData;
-	for (int i = 0; i < structure.size() - 2; ++i)
-	{
-		//init autoencoder
-		std::vector<int> AEstructure = {structure[i],structure[i + 1],structure[i]};
-		std::vector<Eigen::MatrixXd> AEweights = {weights[i], weights[i].transpose()};
-		std::vector<Eigen::VectorXd> AEbiases = {biases[i], Eigen::VectorXd::Zero(AEstructure[2])};
-
-		//for-loop-learing
-		double error = 1.0;
-		for (int j = 0; j < pretrainLearningTime; ++j)
-		{
-			std::vector<int> ns(inputData.rows());
-			iota(ns.begin(), ns.end(), 0);
-			shuffle(ns.begin(), ns.end(), std::mt19937());
-			for (int n : ns)
-			{
-				VectorXd input = inputData.row(n);
-				error = pretrainProccess(AEstructure, AEweights, AEbiases, input);
-				std::cout << "error: " << error << "\r" << std::flush;
-			}
-			if (error < 0.001)
-			{
-				break;
-			}
-		}
-		cout << endl << i << endl;
-		//pouring middleData
-		middleData.resize(inputData.rows(), structure[i + 1]);
-		for (int k = 0; k < inputData.rows(); ++k)
-		{
-			VectorXd inptVctr = AEweights[0].transpose() * inputData.row(k).transpose() + AEbiases[0];
-			middleData.row(k) = activationFunc(inptVctr).transpose();
-		}
-
-		//move middleData to inputData
-		inputData = middleData;
-		weights[i] = AEweights[0];
-		biases[i] = AEbiases[0];
-	}
-}
+void pretrain(std::vector<int> const& structure);
 
 double singleRun(std::vector<int> const& structure, double const& initVal, std::string filename)
 {
@@ -515,7 +466,42 @@ void pretrainBP(std::vector<int> const& structure, std::vector<Eigen::MatrixXd>&
 	}
 }
 
-double pretrainProccess(std::vector<int> const& structure, std::vector<Eigen::MatrixXd>& AEweights, std::vector<Eigen::VectorXd>& AEbiases, Eigen::VectorXd input)
+double pretrainValidate(std::vector<int> const& structure, std::vector<Eigen::MatrixXd>& AEweights, std::vector<Eigen::VectorXd>& AEbiases, Eigen::MatrixXd& inputData)
+{
+	double error = 0.0;
+	Eigen::VectorXd outs = Eigen::VectorXd::Zero(inputData.rows());
+	std::mutex mtx;
+
+	Concurrency::parallel_for<int>(0, inputData.rows(), 1, [&error, &outs, &mtx, inputData, structure, AEweights, AEbiases](int i)
+                               {
+	                               //	feedforward proccess
+	                               std::vector<Eigen::VectorXd> outputs;
+								   Eigen::VectorXd input = inputData.row(i);
+	                               outputs.push_back(input.transpose());
+
+	                               for (int j = 0; j < structure.size() - 1; j++)
+	                               {
+		                               Eigen::VectorXd inputs = (outputs[j].transpose() * AEweights[j] + AEbiases[j].transpose());
+		                               Eigen::VectorXd output;
+		                               if (j == structure.size() - 2)
+		                               {
+			                               output = outputActivationFunc(inputs);
+		                               }
+		                               else
+		                               {
+			                               output = activationFunc(inputs);
+		                               }
+		                               outputs.push_back(output);
+	                               }
+	                               mtx.lock();
+	                               outs[i] = outputs[structure.size() - 1].sum();
+	                               mtx.unlock();
+	                               error += errorFunc(outputs[structure.size() - 1], input);
+                               });
+	return error;
+}
+
+void pretrainProccess(std::vector<int> const& structure, std::vector<Eigen::MatrixXd>& AEweights, std::vector<Eigen::VectorXd>& AEbiases, Eigen::VectorXd input)
 {
 	//	feedforward proccess
 	std::vector<Eigen::VectorXd> outputs;
@@ -529,7 +515,52 @@ double pretrainProccess(std::vector<int> const& structure, std::vector<Eigen::Ma
 	}
 	//	backpropergation method
 	pretrainBP(structure, AEweights, AEbiases, outputs, input);
+}
 
-	double error = errorFunc(outputs[structure.size() - 1], input);
-	return error;
+void pretrain(std::vector<int> const& structure)
+{
+	cout << "autoencoder" << endl;
+	const int pretrainLearningTime = LEARNING_TIME;
+	Eigen::MatrixXd inputData = dataSet.dataSet;
+	Eigen::MatrixXd middleData;
+	for (int i = 0; i < structure.size() - 2; ++i)
+	{
+		//init autoencoder
+		std::vector<int> AEstructure = {structure[i],structure[i + 1],structure[i]};
+		std::vector<Eigen::MatrixXd> AEweights = {weights[i], weights[i].transpose()};
+		std::vector<Eigen::VectorXd> AEbiases = {biases[i], Eigen::VectorXd::Zero(AEstructure[2])};
+
+		//for-loop-learing
+		double error = 1.0;
+		for (int j = 0; j < pretrainLearningTime; ++j)
+		{
+			std::vector<int> ns(inputData.rows());
+			iota(ns.begin(), ns.end(), 0);
+			shuffle(ns.begin(), ns.end(), std::mt19937());
+			for (int n : ns)
+			{
+				VectorXd input = inputData.row(n);
+				pretrainProccess(AEstructure, AEweights, AEbiases, input);
+				error = pretrainValidate(AEstructure, AEweights, AEbiases, inputData);
+				std::cout << "error: " << error << "\r" << std::flush;
+			}
+			if (error < PRETRAIN_ERROR_BOTTOM)
+			{
+				break;
+			}
+		}
+		cout << endl << i << endl;
+		//pouring middleData
+		middleData.resize(inputData.rows(), structure[i + 1]);
+		for (int k = 0; k < inputData.rows(); ++k)
+		{
+			VectorXd inptVctr = AEweights[0].transpose() * inputData.row(k).transpose() + AEbiases[0];
+			middleData.row(k) = activationFunc(inptVctr).transpose();
+		}
+
+		//move middleData to inputData
+		inputData = middleData;
+		weights[i] = AEweights[0];
+		biases[i] = AEbiases[0];
+	}
 }
