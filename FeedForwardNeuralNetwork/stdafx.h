@@ -13,6 +13,4 @@
 #include <tchar.h>
 #include "Eigen/Core"
 
-#include "parameters.h"
-
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください
