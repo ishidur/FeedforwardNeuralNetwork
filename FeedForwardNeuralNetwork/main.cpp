@@ -17,22 +17,23 @@
 #include "config.h"
 
 #include <numeric>
+using namespace std;
+using namespace Eigen;
+#define SLIDE 1
 
-#define SLIDE 1000
-
-Eigen::VectorXd activationFunc(Eigen::VectorXd inputs)
+Eigen::VectorXd activationFunc(Eigen::VectorXd const& inputs)
 {
 	Eigen::VectorXd result = sigmoid(inputs);
 	return result;
 }
 
-Eigen::VectorXd differential(Eigen::VectorXd input)
+Eigen::VectorXd differential(Eigen::VectorXd const& input)
 {
 	Eigen::VectorXd result = differentialSigmoid(input);
 	return result;
 }
 
-Eigen::VectorXd outputActivationFunc(Eigen::VectorXd inputs)
+Eigen::VectorXd outputActivationFunc(Eigen::VectorXd const& inputs)
 {
 	if (dataSet.useSoftmax)
 	{
@@ -42,7 +43,7 @@ Eigen::VectorXd outputActivationFunc(Eigen::VectorXd inputs)
 	return activationFunc(inputs);
 }
 
-Eigen::VectorXd outputDifferential(Eigen::VectorXd input)
+Eigen::VectorXd outputDifferential(Eigen::VectorXd const& input)
 {
 	if (dataSet.useSoftmax)
 	{
@@ -55,7 +56,7 @@ Eigen::VectorXd outputDifferential(Eigen::VectorXd input)
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
 
-void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
+void initWeightsAndBiases(std::vector<int> const& structure, double iniitalVal)
 {
 	weights.clear();
 	biases.clear();
@@ -66,16 +67,67 @@ void initWeightsAndBiases(std::vector<int> structure, double iniitalVal)
 	}
 }
 
-double errorFunc(Eigen::VectorXd outData, Eigen::VectorXd teachData);
-Eigen::MatrixXd calcDelta(std::vector<int> structure, int layerNo, std::vector<Eigen::VectorXd> output, Eigen::MatrixXd prevDelta);
-void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> output, Eigen::VectorXd teachData);
-double validate(std::vector<int> structure, bool show = false);
-void Softmaxtest(std::vector<int> structure, std::ostream& out = std::cout);
-double learnProccess(std::vector<int> structure, int iterator, Eigen::VectorXd input, Eigen::VectorXd teachData, std::ostream& out = std::cout);
+double errorFunc(Eigen::VectorXd const& outData, Eigen::VectorXd const& teachData);
+Eigen::MatrixXd calcDelta(int layerNo, std::vector<Eigen::VectorXd> const& output, Eigen::MatrixXd const& prevDelta);
+void backpropergation(std::vector<int> const& structure, std::vector<Eigen::VectorXd> const& output, Eigen::VectorXd const& teachData);
+double validate(std::vector<int> const& structure, bool show = false);
+void Softmaxtest(std::vector<int> const& structure, std::ostream& out = std::cout);
+double learnProccess(std::vector<int> const& structure, int iterator, Eigen::VectorXd const& input, Eigen::VectorXd const& teachData, std::ostream& out = std::cout);
+double pretrainProccess(std::vector<int> const& structure, std::vector<Eigen::MatrixXd>& AEweights, std::vector<Eigen::VectorXd>& AEbiases, Eigen::VectorXd input);
 
-double singleRun(std::vector<int> structure, double initVal, std::string filename)
+void pretrain(std::vector<int> const& structure)
+{
+	cout << "autoencoder" << endl;
+	const int pretrainLearningTime = LEARNING_TIME;
+	Eigen::MatrixXd inputData = dataSet.dataSet;
+	Eigen::MatrixXd middleData;
+	for (int i = 0; i < structure.size() - 2; ++i)
+	{
+		//init autoencoder
+		std::vector<int> AEstructure = {structure[i],structure[i + 1],structure[i]};
+		std::vector<Eigen::MatrixXd> AEweights = {weights[i], weights[i].transpose()};
+		std::vector<Eigen::VectorXd> AEbiases = {biases[i], Eigen::VectorXd::Zero(AEstructure[2])};
+
+		//for-loop-learing
+		double error = 1.0;
+		for (int j = 0; j < pretrainLearningTime; ++j)
+		{
+			std::vector<int> ns(inputData.rows());
+			iota(ns.begin(), ns.end(), 0);
+			shuffle(ns.begin(), ns.end(), std::mt19937());
+			for (int n : ns)
+			{
+				VectorXd input = inputData.row(n);
+				error = pretrainProccess(AEstructure, AEweights, AEbiases, input);
+				std::cout << "error: " << error << "\r" << std::flush;
+			}
+			if (error < 0.001)
+			{
+				break;
+			}
+		}
+		cout << endl << i << endl;
+		//pouring middleData
+		middleData.resize(inputData.rows(), structure[i + 1]);
+		for (int k = 0; k < inputData.rows(); ++k)
+		{
+			VectorXd inptVctr = AEweights[0].transpose() * inputData.row(k).transpose() + AEbiases[0];
+			middleData.row(k) = activationFunc(inptVctr).transpose();
+		}
+
+		//move middleData to inputData
+		inputData = middleData;
+		weights[i] = AEweights[0];
+		biases[i] = AEbiases[0];
+	}
+}
+
+double singleRun(std::vector<int> const& structure, double const& initVal, std::string filename)
 {
 	initWeightsAndBiases(structure, initVal);
+	//pretraining process
+	pretrain(structure);
+
 	//	int a[dataSet.dataSet.rows()] = {0};
 	std::ofstream ofs(filename + ".csv");
 	ofs << "step,";
@@ -216,7 +268,7 @@ int main()
 	return 0;
 }
 
-void Softmaxtest(std::vector<int> structure, std::ostream& out)
+void Softmaxtest(std::vector<int> const& structure, std::ostream& out)
 {
 	int correct[10] = {0};
 	int num[10] = {0};
@@ -269,6 +321,7 @@ void Softmaxtest(std::vector<int> structure, std::ostream& out)
 		out << std::endl << i << "correct, " << correct[i] << ", /, " << num[i] << std::endl;
 	}
 }
+
 auto squared = [](const double x)
 {
 	return x * x;
@@ -278,7 +331,8 @@ auto cross = [](const double x)
 	double y = log(x);
 	return y;
 };
-double errorFunc(Eigen::VectorXd outData, Eigen::VectorXd teachData)
+
+double errorFunc(Eigen::VectorXd const& outData, Eigen::VectorXd const& teachData)
 {
 	double error;
 	if (dataSet.useSoftmax)
@@ -297,13 +351,15 @@ double errorFunc(Eigen::VectorXd outData, Eigen::VectorXd teachData)
 	}
 	return error;
 }
-Eigen::MatrixXd calcDelta(std::vector<int> structure, int layerNo, std::vector<Eigen::VectorXd> output, Eigen::MatrixXd prevDelta)
+
+Eigen::MatrixXd calcDelta(int layerNo, std::vector<Eigen::VectorXd> const& output, Eigen::MatrixXd const& prevDelta)
 {
 	Eigen::VectorXd diff = differential(output[layerNo + 1]);
 	Eigen::MatrixXd delta = (prevDelta * weights[layerNo + 1].transpose()).array() * diff.transpose().array();
 	return delta;
 }
-void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> output, Eigen::VectorXd teachData)
+
+void backpropergation(std::vector<int> const& structure, std::vector<Eigen::VectorXd> const& output, Eigen::VectorXd const& teachData)
 {
 	Eigen::VectorXd diff = outputDifferential(output[structure.size() - 1]);
 	Eigen::MatrixXd delta = (output[structure.size() - 1] - teachData).transpose().array() * diff.transpose().array();
@@ -312,12 +368,13 @@ void backpropergation(std::vector<int> structure, std::vector<Eigen::VectorXd> o
 	for (int i = 3; i <= structure.size(); ++i)
 	{
 		int n = structure.size() - i;
-		delta = calcDelta(structure, n, output, delta);
+		delta = calcDelta(n, output, delta);
 		weights[n] -= LEARNING_RATE * output[n] * delta;
 		biases[n] -= LEARNING_RATE * delta.transpose();
 	}
 }
-double validate(std::vector<int> structure, bool show)
+
+double validate(std::vector<int> const& structure, bool show)
 {
 	double error = 0.0;
 	Eigen::VectorXd outs = Eigen::VectorXd::Zero(dataSet.testDataSet.rows());
@@ -381,7 +438,8 @@ double validate(std::vector<int> structure, bool show)
 	return error;
 	//	return error / dataSet.testDataSet.rows();
 }
-double learnProccess(std::vector<int> structure, int iterator, Eigen::VectorXd input, Eigen::VectorXd teachData, std::ostream& out)
+
+double learnProccess(std::vector<int> const& structure, int iterator, Eigen::VectorXd const& input, Eigen::VectorXd const& teachData, std::ostream& out)
 {
 	//	feedforward proccess
 	std::vector<Eigen::VectorXd> outputs;
@@ -405,7 +463,7 @@ double learnProccess(std::vector<int> structure, int iterator, Eigen::VectorXd i
 	backpropergation(structure, outputs, teachData);
 
 
-	if (typeid(dataSet) == typeid(FuncApproxDataSet))
+	if (typeid(dataSet) == typeid(MNISTDataSet))
 	{
 		double error = errorFunc(outputs[structure.size() - 1], teachData);
 		return error;
@@ -433,4 +491,45 @@ double learnProccess(std::vector<int> structure, int iterator, Eigen::VectorXd i
 		}
 		return error;
 	}
+}
+
+Eigen::MatrixXd pretrainDelta(std::vector<Eigen::MatrixXd>& AEweights, int layerNo, std::vector<Eigen::VectorXd> const& output, Eigen::MatrixXd const& prevDelta)
+{
+	Eigen::VectorXd diff = differential(output[layerNo + 1]);
+	Eigen::MatrixXd delta = (prevDelta * AEweights[layerNo + 1].transpose()).array() * diff.transpose().array();
+	return delta;
+}
+
+void pretrainBP(std::vector<int> const& structure, std::vector<Eigen::MatrixXd>& AEweights, std::vector<Eigen::VectorXd>& AEbiases, std::vector<Eigen::VectorXd> output, Eigen::VectorXd teachData)
+{
+	Eigen::VectorXd diff = differential(output[structure.size() - 1]);
+	Eigen::MatrixXd delta = (output[structure.size() - 1] - teachData).transpose().array() * diff.transpose().array();
+	AEweights[structure.size() - 2] -= LEARNING_RATE * output[structure.size() - 2] * delta;
+	AEbiases[structure.size() - 2] -= LEARNING_RATE * delta.transpose();
+	for (int i = 3; i <= structure.size(); ++i)
+	{
+		int n = structure.size() - i;
+		delta = pretrainDelta(AEweights, n, output, delta);
+		AEweights[n] -= LEARNING_RATE * output[n] * delta;
+		AEbiases[n] -= LEARNING_RATE * delta.transpose();
+	}
+}
+
+double pretrainProccess(std::vector<int> const& structure, std::vector<Eigen::MatrixXd>& AEweights, std::vector<Eigen::VectorXd>& AEbiases, Eigen::VectorXd input)
+{
+	//	feedforward proccess
+	std::vector<Eigen::VectorXd> outputs;
+	outputs.push_back(input);
+
+	for (int i = 0; i < structure.size() - 1; i++)
+	{
+		Eigen::VectorXd inputs = (outputs[i].transpose() * AEweights[i] + AEbiases[i].transpose());
+		Eigen::VectorXd output = activationFunc(inputs);
+		outputs.push_back(output);
+	}
+	//	backpropergation method
+	pretrainBP(structure, AEweights, AEbiases, outputs, input);
+
+	double error = errorFunc(outputs[structure.size() - 1], input);
+	return error;
 }
