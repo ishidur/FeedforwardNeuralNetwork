@@ -71,14 +71,15 @@ Eigen::MatrixXd calcDelta(int layerNo, std::vector<Eigen::VectorXd> const& outpu
 void backpropergation(std::vector<int> const& structure, std::vector<Eigen::VectorXd> const& output, Eigen::VectorXd const& teachData);
 void Softmaxtest(std::vector<int> const& structure, std::ostream& out = std::cout);
 double learnProccess(std::vector<int> const& structure, int iterator, Eigen::VectorXd const& input, Eigen::VectorXd const& teachData, std::ostream& out = std::cout);
-void pretrain(std::vector<int> const& structure);
+void pretrain(std::vector<int> const& structure, std::ostream& out = std::cout);
 
 double singleRun(std::vector<int> const& structure, double const& initVal, std::string filename)
 {
 	initWeightsAndBiases(structure, initVal);
 	//pretraining process
-	pretrain(structure);
-
+	std::ofstream preofs(filename + "-ae" + ".csv");
+	pretrain(structure, preofs);
+	preofs.close();
 	//	int a[dataSet.dataSet.rows()] = {0};
 	std::ofstream ofs(filename + ".csv");
 	ofs << "step,";
@@ -476,7 +477,7 @@ double pretrainValidate(std::vector<int> const& structure, std::vector<Eigen::Ma
                                {
 	                               //	feedforward proccess
 	                               std::vector<Eigen::VectorXd> outputs;
-								   Eigen::VectorXd input = inputData.row(i);
+	                               Eigen::VectorXd input = inputData.row(i);
 	                               outputs.push_back(input.transpose());
 
 	                               for (int j = 0; j < structure.size() - 1; j++)
@@ -517,10 +518,10 @@ void pretrainProccess(std::vector<int> const& structure, std::vector<Eigen::Matr
 	pretrainBP(structure, AEweights, AEbiases, outputs, input);
 }
 
-void pretrain(std::vector<int> const& structure)
+void pretrain(std::vector<int> const& structure, std::ostream& out)
 {
 	cout << "autoencoder" << endl;
-	const int pretrainLearningTime = LEARNING_TIME;
+	out << "autoencoder" << endl;
 	Eigen::MatrixXd inputData = dataSet.dataSet;
 	Eigen::MatrixXd middleData;
 	for (int i = 0; i < structure.size() - 2; ++i)
@@ -532,7 +533,7 @@ void pretrain(std::vector<int> const& structure)
 
 		//for-loop-learing
 		double error = 1.0;
-		for (int j = 0; j < pretrainLearningTime; ++j)
+		for (int j = 0; j < PRETRAIN_LEARNING_TIME; ++j)
 		{
 			std::vector<int> ns(inputData.rows());
 			iota(ns.begin(), ns.end(), 0);
@@ -546,6 +547,7 @@ void pretrain(std::vector<int> const& structure)
 			}
 			if (error < PRETRAIN_ERROR_BOTTOM)
 			{
+				out << i << "," << j << endl;
 				break;
 			}
 		}
