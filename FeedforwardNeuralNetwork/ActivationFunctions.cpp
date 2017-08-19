@@ -43,21 +43,17 @@ auto soft = [](const double x)
 Eigen::VectorXd softmax(Eigen::VectorXd inputs)
 {
 	Eigen::VectorXd a = inputs.unaryExpr(soft);
-	double s = a.sum();
-	Eigen::VectorXd b = a / s;
-	return b;
+	return a / a.sum();
 }
 
 Eigen::VectorXd differentialSigmoid(Eigen::VectorXd input)
 {
-	Eigen::VectorXd result = input.array() * (Eigen::VectorXd::Ones(input.size()) - input).array();
-	return result;
+	return input.array() * (Eigen::VectorXd::Ones(input.size()) - input).array();
 }
 
 Eigen::VectorXd differentialTanh(Eigen::VectorXd input)
 {
-	Eigen::VectorXd result = Eigen::VectorXd::Ones(input.size()).array() - input.array() * input.array();
-	return result;
+	return Eigen::VectorXd::Ones(input.size()).array() - input.array() * input.array();
 }
 
 auto diffRelu = [](const double input)
@@ -71,6 +67,5 @@ auto diffRelu = [](const double input)
 
 Eigen::VectorXd differentialRelu(Eigen::VectorXd input)
 {
-	Eigen::VectorXd result = input.unaryExpr(relu);
-	return result;
+	return input.unaryExpr(relu);
 }

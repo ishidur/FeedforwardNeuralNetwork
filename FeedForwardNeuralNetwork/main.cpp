@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <time.h>
 #include <ppl.h>
+#include <tuple>
 
 #include "ActivationFunctions.h"
 #include "config.h"
@@ -20,37 +21,6 @@
 using namespace std;
 using namespace Eigen;
 
-Eigen::VectorXd activationFunc(Eigen::VectorXd const& inputs)
-{
-	Eigen::VectorXd result = sigmoid(inputs);
-	return result;
-}
-
-Eigen::VectorXd differential(Eigen::VectorXd const& input)
-{
-	Eigen::VectorXd result = differentialSigmoid(input);
-	return result;
-}
-
-Eigen::VectorXd outputActivationFunc(Eigen::VectorXd const& inputs)
-{
-	if (dataSet.useSoftmax)
-	{
-		return softmax(inputs);
-	}
-	//	return inputs;
-	return activationFunc(inputs);
-}
-
-Eigen::VectorXd outputDifferential(Eigen::VectorXd const& input)
-{
-	if (dataSet.useSoftmax)
-	{
-		return Eigen::VectorXd::Ones(input.size());
-	}
-	//	return Eigen::VectorXd::Ones(input.size());
-	return differential(input);
-}
 
 std::vector<Eigen::MatrixXd> weights;
 std::vector<Eigen::VectorXd> biases;
@@ -66,14 +36,11 @@ void initWeightsAndBiases(std::vector<int> const& structure, double iniitalVal)
 	}
 }
 
-double errorFunc(Eigen::VectorXd const& outData, Eigen::VectorXd const& teachData);
-Eigen::MatrixXd calcDelta(int layerNo, std::vector<Eigen::VectorXd> const& output, Eigen::MatrixXd const& prevDelta);
-void backpropergation(std::vector<int> const& structure, std::vector<Eigen::VectorXd> const& output, Eigen::VectorXd const& teachData);
 void Softmaxtest(std::vector<int> const& structure, std::ostream& out = std::cout);
 double learnProccess(std::vector<int> const& structure, int iterator, Eigen::VectorXd const& input, Eigen::VectorXd const& teachData, std::ostream& out = std::cout);
 void pretrain(std::vector<int> const& structure, std::ostream& out = std::cout);
 
-double singleRun(std::vector<int> const& structure, double const& initVal, std::string filename)
+std::tuple<double, int> singleRun(std::vector<int> const& structure, double const& initVal, std::string filename)
 {
 	initWeightsAndBiases(structure, initVal);
 	//pretraining process
@@ -103,7 +70,9 @@ double singleRun(std::vector<int> const& structure, double const& initVal, std::
 
 	int s = 0;
 	std::string progress = "";
-
+	int times = LEARNING_TIME;
+	std::vector<int> ns(dataSet.dataSet.rows());
+	const int c = ns.size() * SLIDE;
 	for (int i = 0; i < LEARNING_TIME; ++i)
 	//	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
@@ -113,7 +82,6 @@ double singleRun(std::vector<int> const& structure, double const& initVal, std::
 		//			progress += "#";
 		//		}
 		//		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " << progress << "\r" << std::flush;
-		std::vector<int> ns(dataSet.dataSet.rows());
 		iota(ns.begin(), ns.end(), 0);
 		shuffle(ns.begin(), ns.end(), std::mt19937());
 		for (int n : ns)
@@ -127,12 +95,13 @@ double singleRun(std::vector<int> const& structure, double const& initVal, std::
 
 			Eigen::VectorXd input = dataSet.dataSet.row(n);
 			Eigen::VectorXd teach = dataSet.teachSet.row(n);
-			if (s % (ns.size() * SLIDE) == 0)
+			if (s % c == 0)
 			{
 				ofs << i << ",";
 				error = learnProccess(structure, s, input, teach, ofs);
 				if (error < ERROR_BOTTOM)
 				{
+					times = i;
 					goto learn_end;
 				}
 			}
@@ -152,7 +121,7 @@ learn_end:
 		ofs2.close();
 	}
 	std::cout << std::endl;
-	return error;
+	return std::forward_as_tuple(error, times);
 }
 
 int main()
@@ -194,18 +163,20 @@ int main()
 			for (int i = 0; i < TRIALS_PER_STRUCTURE; ++i)
 			{
 				time_t epoch_time;
-				epoch_time = time(NULL);
-				ofs2 << "try, " << i << std::endl;
+				epoch_time = time(nullptr);
+				ofs2 << "try," << i << std::endl;
 				std::cout << "try: " << i << std::endl;
 				std::string fileName = dirName;
 				fileName += "result-";
 				fileName += std::to_string(structure.size()) + "-layers-";
 				fileName += layers;
 				fileName += "-" + std::to_string(epoch_time);
-				ofs2 << "file, " << fileName << std::endl;
+				ofs2 << "file," << fileName << std::endl;
 				std::cout << fileName << std::endl;
-				double err = singleRun(structure, init_val, fileName);
-				ofs2 << "error, " << err << std::endl;
+				double err;
+				int n;
+				std::tie(err, n) = singleRun(structure, init_val, fileName);
+				ofs2 << "error," << err << ",,learning time," << n << std::endl;
 				std::cout << "error; " << err << std::endl;
 				if (err < ERROR_BOTTOM)
 				{
