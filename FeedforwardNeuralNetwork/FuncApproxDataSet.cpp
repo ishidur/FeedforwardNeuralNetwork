@@ -2,8 +2,8 @@
 #include "FuncApproxDataSet.h"
 #include <fstream>
 
-#define TRAIN_DATA_NUM 5
-#define TEST_DATA_NUM 50
+#define TRAIN_DATA_NUM 30
+#define TEST_DATA_NUM 60
 //y=cos(x/2)sin(8x)
 FuncApproxDataSet::FuncApproxDataSet()
 {
@@ -12,7 +12,7 @@ FuncApproxDataSet::FuncApproxDataSet()
 
 auto func = [](double x)
 {
-	return cos(x);
+	return sin(x);
 //	return sin(x / 2.0)*cos(x*2.0);
 //	return cos(x / 2.0) * sin(8.0 * x);
 };

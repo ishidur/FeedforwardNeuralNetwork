@@ -44,9 +44,9 @@ std::tuple<double, int> singleRun(std::vector<int> const& structure, double cons
 {
 	initWeightsAndBiases(structure, initVal);
 	//pretraining process
-	std::ofstream preofs(filename + "-ae" + ".csv");
-	pretrain(structure, preofs);
-	preofs.close();
+//	std::ofstream preofs(filename + "-ae" + ".csv");
+//	pretrain(structure, preofs);
+//	preofs.close();
 	//	int a[dataSet.dataSet.rows()] = {0};
 	std::ofstream ofs(filename + ".csv");
 	ofs << "step,";
@@ -127,10 +127,10 @@ learn_end:
 int main()
 {
 	dataSet.load();
-	//	if (typeid(dataSet) == typeid(FuncApproxDataSet))
-	//	{
-	//		dataSet.show();
-	//	}
+	//		if (typeid(dataSet) == typeid(FuncApproxDataSet))
+	//		{
+	//			dataSet.show();
+	//		}
 	for (double init_val : initVals)
 	{
 		std::string dirName = "data\\";
@@ -330,10 +330,10 @@ double validate(std::vector<int> const& structure, bool show)
 	                               error += errorFunc(outputs[structure.size() - 1], teach);
                                });
 
-	//	if (show && typeid(dataSet) == typeid(FuncApproxDataSet))
-	//	{
-	//		dataSet.update(outs);
-	//	}
+	//		if (show && typeid(dataSet) == typeid(FuncApproxDataSet))
+	//		{
+	//			dataSet.update(outs);
+	//		}
 	//	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	//	{
 	//		//	feedforward proccess
@@ -470,6 +470,7 @@ double pretrainValidate(std::vector<int> const& structure, std::vector<Eigen::Ma
 	                               mtx.unlock();
 	                               error += errorFunc(outputs[structure.size() - 1], input);
                                });
+	//	return error / inputData.rows();
 	return error;
 }
 
