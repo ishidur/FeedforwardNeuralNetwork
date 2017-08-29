@@ -13,14 +13,14 @@
 //XOR
 //std::vector<double> initVals = {0.001, 0.01, 0.1};
 const std::vector<double> initVals = {0.01};
-#define TRIALS_PER_STRUCTURE 5
-#define LEARNING_RATE 0.01
+#define TRIALS_PER_STRUCTURE 2
+#define LEARNING_RATE 1.0
 #define LEARNING_TIME 50000
 #define ERROR_BOTTOM 0.01
 //dataset
 XORDataSet dataSet;
 //Network structure.
-const std::vector<std::vector<int>> structures = {{2, 3, 1}, {2, 4, 1}};
+const std::vector<std::vector<int>> structures = {{2, 3, 3, 3, 1},{2, 3, 4, 3, 1},{2, 4, 2, 3, 1}};
 //const std::vector<std::vector<int>> structures = {{2, 2, 1},{2, 3, 1},{2, 4, 1},{ 2, 2, 2, 1 },{ 2, 3, 3, 1 },{ 2, 4, 4, 1 }, {2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1},{2, 2, 2, 2, 2, 1},{2, 3, 3, 3, 3, 1},{2, 4, 4, 4, 4, 1}};
 //const std::vector<std::vector<int>> structures = { {2, 4, 3, 2, 1},{2, 5, 4, 3, 1},{2, 5, 3, 2, 1} };
 
@@ -57,13 +57,13 @@ const std::vector<std::vector<int>> structures = {{2, 3, 1}, {2, 4, 1}};
 
 inline Eigen::VectorXd activationFunc(Eigen::VectorXd const& inputs)
 {
-	Eigen::VectorXd result = Relu(inputs);
+	Eigen::VectorXd result = sigmoid(inputs);
 	return result;
 }
 
 inline Eigen::VectorXd differential(Eigen::VectorXd const& input)
 {
-	Eigen::VectorXd result = differentialRelu(input);
+	Eigen::VectorXd result = differentialSigmoid(input);
 	return result;
 }
 

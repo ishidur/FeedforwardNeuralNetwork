@@ -44,9 +44,9 @@ std::tuple<double, int> singleRun(std::vector<int> const& structure, double cons
 {
 	initWeightsAndBiases(structure, initVal);
 	//pretraining process
-//	std::ofstream preofs(filename + "-ae" + ".csv");
-//	pretrain(structure, preofs);
-//	preofs.close();
+	std::ofstream preofs(filename + "-ae" + ".csv");
+	pretrain(structure, preofs);
+	preofs.close();
 	//	int a[dataSet.dataSet.rows()] = {0};
 	std::ofstream ofs(filename + ".csv");
 	ofs << "step,";
@@ -113,6 +113,28 @@ std::tuple<double, int> singleRun(std::vector<int> const& structure, double cons
 		}
 	}
 learn_end:
+	ofs << "middleData" << endl;
+	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
+	{
+		//	feedforward proccess
+		Eigen::VectorXd output= dataSet.testDataSet.row(i).transpose();
+		for (int j = 0; j < structure.size() - 2; j++)
+		{
+			Eigen::VectorXd inputs = (output.transpose() * weights[j] + biases[j].transpose());
+			output = activationFunc(inputs);
+		}
+
+		int sea = output.size();
+		for (int l = 0; l < sea; ++l)
+		{
+			ofs << output[l];
+			if (l < sea - 1)
+			{
+				ofs << ",";
+			}
+		}
+		ofs << endl;
+	}
 	ofs.close();
 	if (dataSet.useSoftmax)
 	{
@@ -496,18 +518,27 @@ void pretrain(std::vector<int> const& structure, std::ostream& out)
 	out << "autoencoder" << endl;
 	Eigen::MatrixXd inputData = dataSet.dataSet;
 	Eigen::MatrixXd middleData;
+	for (int k = 0; k < inputData.rows(); ++k)
+	{
+		out << "inputData" << endl;
+		for (int l = 0; l < inputData.cols(); ++l)
+		{
+			out << inputData(k, l) << ",";
+		}
+		out << endl;
+	}
 	for (int i = 0; i < structure.size() - 2; ++i)
 	{
 		//init autoencoder
 		std::vector<int> AEstructure = {structure[i],structure[i + 1],structure[i]};
 		std::vector<Eigen::MatrixXd> AEweights = {weights[i], weights[i].transpose()};
 		std::vector<Eigen::VectorXd> AEbiases = {biases[i], Eigen::VectorXd::Zero(AEstructure[2])};
-
+		int inputDataSize = inputData.rows();
 		//for-loop-learing
 		double error = 1.0;
 		for (int j = 0; j < PRETRAIN_LEARNING_TIME; ++j)
 		{
-			std::vector<int> ns(inputData.rows());
+			std::vector<int> ns(inputDataSize);
 			iota(ns.begin(), ns.end(), 0);
 			shuffle(ns.begin(), ns.end(), std::mt19937());
 			for (int n : ns)
@@ -525,11 +556,23 @@ void pretrain(std::vector<int> const& structure, std::ostream& out)
 		}
 		cout << endl << i << endl;
 		//pouring middleData
-		middleData.resize(inputData.rows(), structure[i + 1]);
-		for (int k = 0; k < inputData.rows(); ++k)
+		middleData.resize(inputDataSize, structure[i + 1]);
+		out << "middleData" << endl;
+		for (int k = 0; k < inputDataSize; ++k)
 		{
 			VectorXd inptVctr = AEweights[0].transpose() * inputData.row(k).transpose() + AEbiases[0];
 			middleData.row(k) = activationFunc(inptVctr).transpose();
+			int cols = middleData.cols();
+			for (int l = 0; l < middleData.cols(); ++l)
+			{
+				out << middleData(k, l);
+
+				if (l < cols - 1)
+				{
+					out << ",";
+				}
+			}
+			out << endl;
 		}
 
 		//move middleData to inputData
