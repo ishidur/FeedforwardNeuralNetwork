@@ -7,6 +7,8 @@
 #include "TwoSpiralDataSet.h"
 
 #define SLIDE 10
+
+bool needPretrain = false;
 #define PRETRAIN_ERROR_BOTTOM 0.001
 #define PRETRAIN_LEARNING_TIME 1000000
 

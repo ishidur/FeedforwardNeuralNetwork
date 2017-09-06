@@ -43,10 +43,14 @@ void pretrain(std::vector<int> const& structure, std::ostream& out = std::cout);
 std::tuple<double, int> singleRun(std::vector<int> const& structure, double const& initVal, std::string filename)
 {
 	initWeightsAndBiases(structure, initVal);
-	//pretraining process
-	std::ofstream preofs(filename + "-ae" + ".csv");
-	pretrain(structure, preofs);
-	preofs.close();
+	if (needPretrain)
+	{
+		//pretraining process
+		std::ofstream preofs(filename + "-ae" + ".csv");
+		pretrain(structure, preofs);
+		preofs.close();
+		
+	}
 	//	int a[dataSet.dataSet.rows()] = {0};
 	std::ofstream ofs(filename + ".csv");
 	ofs << "step,";
