@@ -46,26 +46,26 @@ Eigen::VectorXd softmax(Eigen::VectorXd inputs)
 	return a / a.sum();
 }
 
-Eigen::VectorXd differentialSigmoid(Eigen::VectorXd input)
+Eigen::VectorXd differentialSigmoid(Eigen::VectorXd output)
 {
-	return input.array() * (Eigen::VectorXd::Ones(input.size()) - input).array();
+	return output.array() * (Eigen::VectorXd::Ones(output.size()) - output).array();
 }
 
-Eigen::VectorXd differentialTanh(Eigen::VectorXd input)
+Eigen::VectorXd differentialTanh(Eigen::VectorXd output)
 {
-	return Eigen::VectorXd::Ones(input.size()).array() - input.array() * input.array();
+	return Eigen::VectorXd::Ones(output.size()).array() - output.array() * output.array();
 }
 
 auto diffRelu = [](const double input)
 {
-	if (input < 0.0)
+	if (input <= 0.0)
 	{
 		return 0.0;
 	}
 	return 1.0;
 };
 
-Eigen::VectorXd differentialRelu(Eigen::VectorXd input)
+Eigen::VectorXd differentialRelu(Eigen::VectorXd output)
 {
-	return input.unaryExpr(relu);
+	return output.unaryExpr(diffRelu);
 }
