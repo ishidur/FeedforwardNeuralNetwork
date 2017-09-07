@@ -49,7 +49,6 @@ std::tuple<double, int> singleRun(std::vector<int> const& structure, double cons
 		std::ofstream preofs(filename + "-ae" + ".csv");
 		pretrain(structure, preofs);
 		preofs.close();
-		
 	}
 	//	int a[dataSet.dataSet.rows()] = {0};
 	std::ofstream ofs(filename + ".csv");
@@ -121,7 +120,7 @@ learn_end:
 	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	{
 		//	feedforward proccess
-		Eigen::VectorXd output= dataSet.testDataSet.row(i).transpose();
+		Eigen::VectorXd output = dataSet.testDataSet.row(i).transpose();
 		for (int j = 0; j < structure.size() - 2; j++)
 		{
 			Eigen::VectorXd inputs = (output.transpose() * weights[j] + biases[j].transpose());
@@ -152,7 +151,7 @@ learn_end:
 
 int main()
 {
-	int testFlag = 1;
+	/*int testFlag = 0;
 
 	dataSet.load();
 
@@ -161,11 +160,7 @@ int main()
 	{
 		getchar();
 		return 0;
-	}
-
-
-
-
+	}*/
 
 	dataSet.load();
 	//		if (typeid(dataSet) == typeid(FuncApproxDataSet))
@@ -399,8 +394,8 @@ double validate(std::vector<int> const& structure, bool show)
 	//		Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
 	//		error += errorFunc(outputs[structure.size() - 1], teach);
 	//	}
-	return error;
-	//	return error / dataSet.testDataSet.rows();
+	//return error;
+	return error / dataSet.testDataSet.rows();
 }
 
 double learnProccess(std::vector<int> const& structure, int iterator, Eigen::VectorXd const& input, Eigen::VectorXd const& teachData, std::ostream& out)
@@ -434,9 +429,10 @@ double learnProccess(std::vector<int> const& structure, int iterator, Eigen::Vec
 	}
 	else
 	{
-		double error = validate(structure, iterator % 100 == 0);
+		double error = 100.0;
 		if (&out != &std::cout)
 		{
+			error = validate(structure, iterator % 100 == 0);
 			for (int i = 0; i < structure.size() - 1; ++i)
 			{
 				for (int j = 0; j < weights[i].rows(); ++j)

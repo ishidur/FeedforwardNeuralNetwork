@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "ActivationFunctions.h"
 
+#define gradientOfSigmoid 1.0
+
+
 auto relu = [](const double input)
 {
 	if (input < 0.0)
@@ -27,7 +30,7 @@ Eigen::VectorXd Tanh(Eigen::VectorXd inputs)
 
 auto sigm = [](const double input)
 {
-	return 1.0 / (1 + exp(-input));
+	return 1.0 / (1 + exp(-2*input/gradientOfSigmoid));
 };
 
 Eigen::VectorXd sigmoid(Eigen::VectorXd inputs)

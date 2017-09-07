@@ -8,9 +8,9 @@
 #include "TwoSpiralDataSet.h"
 #include "LoadCSVDataSet.h"
 
-#define SLIDE 10
+#define SLIDE 1
 
-bool needPretrain = true;
+bool needPretrain = false;
 #define PRETRAIN_ERROR_BOTTOM 0.001
 #define PRETRAIN_LEARNING_TIME 1000000
 //
@@ -30,16 +30,16 @@ bool needPretrain = true;
 
 //CSV
 //std::vector<double> initVals = {0.001, 0.01, 0.1};
-const std::vector<double> initVals = {0.01};
-#define TRIALS_PER_STRUCTURE 2
+const std::vector<double> initVals = {1.0*pow(10, -10)};
+#define TRIALS_PER_STRUCTURE 1
 #define LEARNING_RATE 0.5
-#define LEARNING_TIME 50000	//Learning Step
-#define ERROR_BOTTOM 0.01
+#define LEARNING_TIME 120	//Learning Step
+#define ERROR_BOTTOM 0.00009
 
 //dataset
 LoadCSVDataSet dataSet;
 //Network structure.
-const std::vector<std::vector<int>> structures = {{2, 3, 3, 3, 1}};
+const std::vector<std::vector<int>> structures = {{4, 1}};
 //const std::vector<std::vector<int>> structures = {{2, 2, 1},{2, 3, 1},{2, 4, 1},{ 2, 2, 2, 1 },{ 2, 3, 3, 1 },{ 2, 4, 4, 1 }, {2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1},{2, 2, 2, 2, 2, 1},{2, 3, 3, 3, 3, 1},{2, 4, 4, 4, 4, 1}};
 //const std::vector<std::vector<int>> structures = { {2, 4, 3, 2, 1},{2, 5, 4, 3, 1},{2, 5, 3, 2, 1} };
 
