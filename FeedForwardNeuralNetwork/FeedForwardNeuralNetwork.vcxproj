@@ -141,6 +141,7 @@
     <ClInclude Include="ActivationFunctions.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="FuncApproxDataSet.h" />
+    <ClInclude Include="LoadCSVDataSet.h" />
     <ClInclude Include="MNISTDataSet.h" />
     <ClInclude Include="TwoSpiralDataSet.h" />
     <ClInclude Include="XORDataSet.h" />
@@ -150,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="ActivationFunctions.cpp" />
     <ClCompile Include="FuncApproxDataSet.cpp" />
+    <ClCompile Include="LoadCSVDataSet.cpp" />
     <ClCompile Include="MNISTDataSet.cpp" />
     <ClCompile Include="TwoSpiralDataSet.cpp" />
     <ClCompile Include="XORDataSet.cpp" />

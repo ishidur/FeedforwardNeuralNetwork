@@ -27,6 +27,7 @@ void TwoSpiralDataSet::load()
 		const double y = (radiusGrowth * i + MINDIAMETER) * sin(angleGrowth * i);
 		ofs << x << ", " << y << ", " << 1 << std::endl;
 		ofs << -x << ", " << -y << ", " << 0 << std::endl;
+
 		dataSet.row(2 * i) << x , y;
 		dataSet.row(2 * i + 1) << -x , -y;
 		teachSet.row(2 * i) << 1;

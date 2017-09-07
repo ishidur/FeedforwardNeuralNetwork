@@ -152,6 +152,21 @@ learn_end:
 
 int main()
 {
+	int testFlag = 1;
+
+	dataSet.load();
+
+
+	if(testFlag==1)
+	{
+		getchar();
+		return 0;
+	}
+
+
+
+
+
 	dataSet.load();
 	//		if (typeid(dataSet) == typeid(FuncApproxDataSet))
 	//		{

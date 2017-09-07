@@ -1,0 +1,8 @@
+structures,2X3X3X3X1
+try,0
+file,data\0.010000\result-5-layers-2X3X3X3X1-1504760935
+error,0.00969941,,learning time,509
+try,1
+file,data\0.010000\result-5-layers-2X3X3X3X1-1504760944
+error,0.00804893,,learning time,20829
+2, /, 2, success
