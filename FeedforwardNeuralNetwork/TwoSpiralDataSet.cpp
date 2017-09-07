@@ -4,8 +4,8 @@
 
 #define POINTS 96
 #define LAP 3
-#define MINDIAMETER 1.0
-#define MAXDIAMETER 6.0
+#define MINDIAMETER 0.1
+#define MAXDIAMETER 1.0
 
 TwoSpiralDataSet::TwoSpiralDataSet()
 {
