@@ -10,6 +10,7 @@ using namespace std;
 #define INPUT_DIM 4
 #define OUTPUT_DIM 1
 #define importFileName "normalizedTrainingSet10000Eps10.0.csv"
+//#define importFileName "Test.csv"
 
 
 LoadCSVDataSet::LoadCSVDataSet()
@@ -62,8 +63,9 @@ void LoadCSVDataSet::load()
 		lineCount++;
 	}
 
-	//cout << dataSet << endl;
-	//cout << teachSet << endl;
+	cout << dataSet << endl;
+	cout << teachSet << endl;
+
 	testDataSet = dataSet;
 	testTeachSet = teachSet;
 }
