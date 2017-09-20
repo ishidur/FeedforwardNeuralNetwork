@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "stdafx.h"
 #include <vector>
+#include "ActivationFunctions.h"
 #include "MNISTDataSet.h"
 #include "XORDataSet.h"
 #include "FuncApproxDataSet.h"
@@ -8,34 +9,34 @@
 
 #define SLIDE 10
 
-bool needPretrain = true;
+bool needPretrain = false;
 #define PRETRAIN_ERROR_BOTTOM 0.001
-#define PRETRAIN_LEARNING_TIME 100000000
+#define PRETRAIN_LEARNING_TIME 1000
+//#define PRETRAIN_LEARNING_TIME 100000000
 
 //XOR
-//std::vector<double> initVals = {0.001, 0.01, 0.1};
-const std::vector<double> initVals = {0.01};
-#define TRIALS_PER_STRUCTURE 2
-#define LEARNING_RATE 1.0
-#define LEARNING_TIME 6000
-#define ERROR_BOTTOM -0.01
-//dataset
-XORDataSet dataSet;
-//Network structure.
-const std::vector<std::vector<int>> structures = {{2, 3, 1}};
-//const std::vector<std::vector<int>> structures = {{2, 2, 1},{2, 3, 1},{2, 4, 1},{ 2, 2, 2, 1 },{ 2, 3, 3, 1 },{ 2, 4, 4, 1 }, {2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1},{2, 2, 2, 2, 2, 1},{2, 3, 3, 3, 3, 1},{2, 4, 4, 4, 4, 1}};
-//const std::vector<std::vector<int>> structures = { {2, 4, 3, 2, 1},{2, 5, 4, 3, 1},{2, 5, 3, 2, 1} };
-
-////Function approximation
+////std::vector<double> initVals = {0.001, 0.01, 0.1};
 //const std::vector<double> initVals = {0.01};
-//#define TRIALS_PER_STRUCTURE 1
-//#define LEARNING_RATE 0.01
-//#define LEARNING_TIME 10000
-//#define ERROR_BOTTOM 0.00000001
+//#define TRIALS_PER_STRUCTURE 5
+//#define LEARNING_RATE 1.0
+//#define LEARNING_TIME 100000
+//#define ERROR_BOTTOM 0.01
 ////dataset
-//FuncApproxDataSet dataSet;
+//XORDataSet dataSet;
 ////Network structure.
-////const std::vector<std::vector<int>> structures = {{1, 5, 1}};
+//const std::vector<std::vector<int>> structures = {{2, 3, 3, 1}};
+////const std::vector<std::vector<int>> structures = {{2, 2, 1},{2, 3, 1},{2, 4, 1},{ 2, 2, 2, 1 },{ 2, 3, 3, 1 },{ 2, 4, 4, 1 }, {2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1}};
+
+//Function approximation
+const std::vector<double> initVals = {0.01};
+#define TRIALS_PER_STRUCTURE 1
+#define LEARNING_RATE 0.03
+#define LEARNING_TIME 5000
+#define ERROR_BOTTOM 0.00000001
+//dataset
+FuncApproxDataSet dataSet;
+//Network structure.
+const std::vector<std::vector<int>> structures = {{1, 8, 1}};
 //const std::vector<std::vector<int>> structures = {{1, 4, 4, 4, 1}};
 
 ////MNIST
@@ -60,13 +61,13 @@ const std::vector<std::vector<int>> structures = {{2, 3, 1}};
 
 inline Eigen::VectorXd activationFunc(Eigen::VectorXd const& inputs)
 {
-	Eigen::VectorXd result = sigmoid(inputs);
+	Eigen::VectorXd result = Relu(inputs);
 	return result;
 }
 
 inline Eigen::VectorXd differential(Eigen::VectorXd const& input)
 {
-	Eigen::VectorXd result = differentialSigmoid(input);
+	Eigen::VectorXd result = differentialRelu(input);
 	return result;
 }
 
@@ -76,8 +77,8 @@ inline Eigen::VectorXd outputActivationFunc(Eigen::VectorXd const& inputs)
 	{
 		return softmax(inputs);
 	}
-//		return inputs;
-	return activationFunc(inputs);
+	return inputs;
+	//	return activationFunc(inputs);
 }
 
 inline Eigen::VectorXd outputDifferential(Eigen::VectorXd const& input)
@@ -86,6 +87,6 @@ inline Eigen::VectorXd outputDifferential(Eigen::VectorXd const& input)
 	{
 		return Eigen::VectorXd::Ones(input.size());
 	}
-//		return Eigen::VectorXd::Ones(input.size());
-	return differential(input);
+	return Eigen::VectorXd::Ones(input.size());
+	//	return differential(input);
 }

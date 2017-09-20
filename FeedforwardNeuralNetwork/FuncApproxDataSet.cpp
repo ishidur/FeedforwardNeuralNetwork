@@ -2,8 +2,8 @@
 #include "FuncApproxDataSet.h"
 #include <fstream>
 
-#define TRAIN_DATA_NUM 30
-#define TEST_DATA_NUM 60
+#define TRAIN_DATA_NUM 10
+#define TEST_DATA_NUM 20
 //y=cos(x/2)sin(8x)
 FuncApproxDataSet::FuncApproxDataSet()
 {
