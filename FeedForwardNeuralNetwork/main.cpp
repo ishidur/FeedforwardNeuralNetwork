@@ -155,10 +155,10 @@ learn_end:
 int main()
 {
 	dataSet.load();
-	if (typeid(dataSet) == typeid(FuncApproxDataSet))
-	{
-		dataSet.show();
-	}
+	//	if (typeid(dataSet) == typeid(FuncApproxDataSet))
+	//	{
+	//		dataSet.show();
+	//	}
 	for (double init_val : initVals)
 	{
 		string dirName = "data\\";
@@ -219,6 +219,7 @@ int main()
 	return 0;
 }
 
+//TODO: didn't work
 void Softmaxtest(vector<int> const& structure, ostream& out)
 {
 	int correct[10] = {0};
@@ -359,10 +360,11 @@ double validate(vector<int> const& structure, bool show)
 	                               error += errorFunc(outputs[structure.size() - 1], teach);
                                });
 
-	if (show && typeid(dataSet) == typeid(FuncApproxDataSet))
-	{
-		dataSet.update(outs);
-	}
+	//	if (show && typeid(dataSet) == typeid(FuncApproxDataSet))
+	//	{
+	//		dataSet.update(outs);
+	//	}
+
 	//	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
 	//	{
 	//		//	feedforward proccess
@@ -420,25 +422,28 @@ double learnProccess(vector<int> const& structure, int iterator, VectorXd const&
 		double error = errorFunc(outputs[structure.size() - 1], teachData);
 		return error;
 	}
-	double error = validate(structure, iterator % 100 == 0);
-	if (&out != &cout)
+	if (&out == &cout)
 	{
-		for (int i = 0; i < structure.size() - 1; ++i)
+		double error = errorFunc(outputs[structure.size() - 1], teachData);
+		return error;
+	}
+
+	double error = validate(structure, iterator % 100 == 0);
+	for (int i = 0; i < structure.size() - 1; ++i)
+	{
+		for (int j = 0; j < weights[i].rows(); ++j)
 		{
-			for (int j = 0; j < weights[i].rows(); ++j)
+			for (int k = 0; k < weights[i].cols(); ++k)
 			{
-				for (int k = 0; k < weights[i].cols(); ++k)
-				{
-					out << weights[i](j, k) << ", ";
-				}
-			}
-			for (int j = 0; j < biases[i].size(); ++j)
-			{
-				out << biases[i][j] << ", ";
+				out << weights[i](j, k) << ", ";
 			}
 		}
-		out << error << endl;
+		for (int j = 0; j < biases[i].size(); ++j)
+		{
+			out << biases[i][j] << ", ";
+		}
 	}
+	out << error << endl;
 	return error;
 }
 

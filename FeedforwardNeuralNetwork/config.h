@@ -7,15 +7,14 @@
 #include "FuncApproxDataSet.h"
 #include "TwoSpiralDataSet.h"
 
-#define SLIDE 10
+#define SLIDE 100
 
 bool needPretrain = false;
 #define PRETRAIN_ERROR_BOTTOM 0.001
 #define PRETRAIN_LEARNING_TIME 1000
 //#define PRETRAIN_LEARNING_TIME 100000000
 
-//XOR
-////std::vector<double> initVals = {0.001, 0.01, 0.1};
+////XOR
 //const std::vector<double> initVals = {0.01};
 //#define TRIALS_PER_STRUCTURE 5
 //#define LEARNING_RATE 1.0
@@ -27,17 +26,17 @@ bool needPretrain = false;
 //const std::vector<std::vector<int>> structures = {{2, 3, 3, 1}};
 ////const std::vector<std::vector<int>> structures = {{2, 2, 1},{2, 3, 1},{2, 4, 1},{ 2, 2, 2, 1 },{ 2, 3, 3, 1 },{ 2, 4, 4, 1 }, {2, 2, 2, 2, 1},{2, 3, 3, 3, 1},{2, 4, 4, 4, 1}};
 
-//Function approximation
-const std::vector<double> initVals = {0.01};
-#define TRIALS_PER_STRUCTURE 1
-#define LEARNING_RATE 0.03
-#define LEARNING_TIME 5000
-#define ERROR_BOTTOM 0.00000001
-//dataset
-FuncApproxDataSet dataSet;
-//Network structure.
-const std::vector<std::vector<int>> structures = {{1, 8, 1}};
-//const std::vector<std::vector<int>> structures = {{1, 4, 4, 4, 1}};
+////Function approximation
+//const std::vector<double> initVals = {0.01};
+//#define TRIALS_PER_STRUCTURE 1
+//#define LEARNING_RATE 0.03
+//#define LEARNING_TIME 5000
+//#define ERROR_BOTTOM 0.00000001
+////dataset
+//FuncApproxDataSet dataSet;
+////Network structure.
+//const std::vector<std::vector<int>> structures = {{1, 8, 1}};
+////const std::vector<std::vector<int>> structures = {{1, 4, 4, 4, 1}};
 
 ////MNIST
 //const std::vector<double> initVals = {1.0};
@@ -49,25 +48,26 @@ const std::vector<std::vector<int>> structures = {{1, 8, 1}};
 ////Network structure.
 //const std::vector<std::vector<int>> structures = {{784, 10}};
 
-////TwoSpiral Prpblem
-//const std::vector<double> initVals = {1.0};
-//#define TRIALS_PER_STRUCTURE 1
-//#define LEARNING_RATE 0.02
-//#define LEARNING_TIME 50
-//#define ERROR_BOTTOM 0.01
-//TwoSpiralDataSet dataSet;
-////const std::vector<std::vector<int>> structures = {{2, 2, 1}, {2, 4, 1}, {2, 6, 1}, {2, 2, 2, 1}, {2, 2, 4, 1}, {2, 4, 2, 1}, {2, 2, 2, 2, 1}};
-//const std::vector<std::vector<int>> structures = {{2, 20, 20, 20, 1}};
+//TwoSpiral Prpblem
+const std::vector<double> initVals = {1.0};
+#define TRIALS_PER_STRUCTURE 1
+#define LEARNING_RATE 0.05
+#define LEARNING_TIME 100000
+#define ERROR_BOTTOM -1.0
+TwoSpiralDataSet dataSet;
+
+//const std::vector<std::vector<int>> structures = {{2, 5, 5, 5, 1}, {2, 10, 10, 10, 1}, {2, 15, 15, 15, 1}, {2, 20, 20, 20, 1}};
+const std::vector<std::vector<int>> structures = {{2, 20, 20, 20, 1}};
 
 inline Eigen::VectorXd activationFunc(Eigen::VectorXd const& inputs)
 {
-	Eigen::VectorXd result = Relu(inputs);
+	Eigen::VectorXd result = sigmoid(inputs);
 	return result;
 }
 
 inline Eigen::VectorXd differential(Eigen::VectorXd const& input)
 {
-	Eigen::VectorXd result = differentialRelu(input);
+	Eigen::VectorXd result = differentialSigmoid(input);
 	return result;
 }
 
@@ -77,8 +77,8 @@ inline Eigen::VectorXd outputActivationFunc(Eigen::VectorXd const& inputs)
 	{
 		return softmax(inputs);
 	}
-	return inputs;
-	//	return activationFunc(inputs);
+	//	return inputs;
+	return activationFunc(inputs);
 }
 
 inline Eigen::VectorXd outputDifferential(Eigen::VectorXd const& input)
@@ -87,6 +87,6 @@ inline Eigen::VectorXd outputDifferential(Eigen::VectorXd const& input)
 	{
 		return Eigen::VectorXd::Ones(input.size());
 	}
-	return Eigen::VectorXd::Ones(input.size());
-	//	return differential(input);
+	//	return Eigen::VectorXd::Ones(input.size());
+	return differential(input);
 }
