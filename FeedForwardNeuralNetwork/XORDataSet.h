@@ -11,4 +11,3 @@ public:
 	XORDataSet();
 	void load();
 };
-

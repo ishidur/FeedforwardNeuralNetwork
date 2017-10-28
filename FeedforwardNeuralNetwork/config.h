@@ -56,7 +56,9 @@ const std::vector<double> initVals = {1.0};
 #define ERROR_BOTTOM 0.001
 TwoSpiralDataSet dataSet;
 
-const std::vector<std::vector<int>> structures = {{2, 5, 5, 5, 1}, {2, 10, 10, 10, 1}, {2, 15, 15, 15, 1}, {2, 20, 20, 20, 1}};
+const std::vector<std::vector<int>> structures = {
+	{2, 5, 5, 5, 1}, {2, 10, 10, 10, 1}, {2, 15, 15, 15, 1}, {2, 20, 20, 20, 1}
+};
 //const std::vector<std::vector<int>> structures = {{2, 20, 20, 20, 1}};
 
 inline Eigen::VectorXd activationFunc(Eigen::VectorXd const& inputs)

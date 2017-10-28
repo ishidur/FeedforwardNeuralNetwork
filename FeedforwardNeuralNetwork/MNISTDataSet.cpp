@@ -45,7 +45,8 @@ Eigen::MatrixXd readImageFile(std::string filename)
 		{
 			progress += "#";
 		}
-		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " << progress << "\r" << std::flush;
+		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " <<
+			progress << "\r" << std::flush;
 		for (int row = 0; row < rows; row++)
 		{
 			for (int col = 0; col < cols; col++)
@@ -85,7 +86,8 @@ Eigen::MatrixXd readLabelFile(std::string filename)
 		{
 			progress += "#";
 		}
-		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " << progress << "\r" << std::flush;
+		std::cout << "progress: " << std::setw(4) << std::right << std::fixed << std::setprecision(1) << (status) << "% " <<
+			progress << "\r" << std::flush;
 		unsigned char temp = 0;
 		ifs.read(reinterpret_cast<char*>(&temp), sizeof(temp));
 		_label(i, int(temp)) = 1.0;

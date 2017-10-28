@@ -17,4 +17,3 @@ public:
 	MNISTDataSet();
 	void load();
 };
-

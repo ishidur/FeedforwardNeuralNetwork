@@ -36,7 +36,8 @@ void initWeightsAndBiases(vector<int> const& structure, double iniitalVal)
 }
 
 void Softmaxtest(vector<int> const& structure, ostream& out = cout);
-double learnProccess(vector<int> const& structure, int iterator, VectorXd const& input, VectorXd const& teachData, ostream& out = cout);
+double learnProccess(vector<int> const& structure, int iterator, VectorXd const& input, VectorXd const& teachData,
+                     ostream& out = cout);
 void pretrain(vector<int> const& structure, ostream& out = cout);
 
 tuple<double, int> singleRun(vector<int> const& structure, double const& initVal, string filename)
@@ -76,7 +77,7 @@ tuple<double, int> singleRun(vector<int> const& structure, double const& initVal
 	vector<int> ns(dataSet.dataSet.rows());
 	const int c = ns.size() * SLIDE;
 	for (int i = 0; i < LEARNING_TIME; ++i)
-	//	for (int i = 0; i < LEARNING_TIME; ++i)
+		//	for (int i = 0; i < LEARNING_TIME; ++i)
 	{
 		//		double status = double((i + 1) * 100.0 / (LEARNING_TIME));
 		//		if (progress.size() < int(status) / 5)
@@ -115,7 +116,8 @@ tuple<double, int> singleRun(vector<int> const& structure, double const& initVal
 			{
 				goto learn_end;
 			}
-			cout << "progress: " << error << ", " << s << "/ " << (ns.size() * LEARNING_TIME) << " " << progress << "\r" << flush;
+			cout << "progress: " << error << ", " << s << "/ " << (ns.size() * LEARNING_TIME) << " " << progress << "\r" <<
+				flush;
 		}
 	}
 learn_end:
@@ -334,31 +336,31 @@ double validate(vector<int> const& structure, bool show)
 	mutex mtx;
 
 	Concurrency::parallel_for<int>(0, dataSet.testDataSet.rows(), 1, [&error, &outs, &mtx, structure](int i)
-                               {
-	                               //	feedforward proccess
-	                               vector<VectorXd> outputs;
-	                               outputs.push_back(dataSet.testDataSet.row(i).transpose());
+	{
+		//	feedforward proccess
+		vector<VectorXd> outputs;
+		outputs.push_back(dataSet.testDataSet.row(i).transpose());
 
-	                               for (int j = 0; j < structure.size() - 1; j++)
-	                               {
-		                               VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
-		                               VectorXd output;
-		                               if (j == structure.size() - 2)
-		                               {
-			                               output = outputActivationFunc(inputs);
-		                               }
-		                               else
-		                               {
-			                               output = activationFunc(inputs);
-		                               }
-		                               outputs.push_back(output);
-	                               }
-	                               mtx.lock();
-	                               outs[i] = outputs[structure.size() - 1].sum();
-	                               mtx.unlock();
-	                               VectorXd teach = dataSet.testTeachSet.row(i);
-	                               error += errorFunc(outputs[structure.size() - 1], teach);
-                               });
+		for (int j = 0; j < structure.size() - 1; j++)
+		{
+			VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
+			VectorXd output;
+			if (j == structure.size() - 2)
+			{
+				output = outputActivationFunc(inputs);
+			}
+			else
+			{
+				output = activationFunc(inputs);
+			}
+			outputs.push_back(output);
+		}
+		mtx.lock();
+		outs[i] = outputs[structure.size() - 1].sum();
+		mtx.unlock();
+		VectorXd teach = dataSet.testTeachSet.row(i);
+		error += errorFunc(outputs[structure.size() - 1], teach);
+	});
 
 	//	if (show && typeid(dataSet) == typeid(FuncApproxDataSet))
 	//	{
@@ -393,7 +395,8 @@ double validate(vector<int> const& structure, bool show)
 	return error / dataSet.testDataSet.rows();
 }
 
-double learnProccess(vector<int> const& structure, int iterator, VectorXd const& input, VectorXd const& teachData, ostream& out)
+double learnProccess(vector<int> const& structure, int iterator, VectorXd const& input, VectorXd const& teachData,
+                     ostream& out)
 {
 	//	feedforward proccess
 	vector<VectorXd> outputs;
@@ -447,14 +450,16 @@ double learnProccess(vector<int> const& structure, int iterator, VectorXd const&
 	return error;
 }
 
-MatrixXd pretrainDelta(vector<MatrixXd>& AEweights, int layerNo, vector<VectorXd> const& output, MatrixXd const& prevDelta)
+MatrixXd pretrainDelta(vector<MatrixXd>& AEweights, int layerNo, vector<VectorXd> const& output,
+                       MatrixXd const& prevDelta)
 {
 	VectorXd diff = differential(output[layerNo + 1]);
 	MatrixXd delta = (prevDelta * AEweights[layerNo + 1].transpose()).array() * diff.transpose().array();
 	return delta;
 }
 
-void pretrainBP(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases, vector<VectorXd> output, VectorXd teachData)
+void pretrainBP(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases,
+                vector<VectorXd> output, VectorXd teachData)
 {
 	VectorXd diff = differential(output[structure.size() - 1]);
 	MatrixXd delta = (output[structure.size() - 1] - teachData).transpose().array() * diff.transpose().array();
@@ -469,43 +474,46 @@ void pretrainBP(vector<int> const& structure, vector<MatrixXd>& AEweights, vecto
 	}
 }
 
-double pretrainValidate(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases, MatrixXd& inputData)
+double pretrainValidate(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases,
+                        MatrixXd& inputData)
 {
 	double error = 0.0;
 	VectorXd outs = VectorXd::Zero(inputData.rows());
 	mutex mtx;
 
-	Concurrency::parallel_for<int>(0, inputData.rows(), 1, [&error, &outs, &mtx, inputData, structure, AEweights, AEbiases](int i)
-                               {
-	                               //	feedforward proccess
-	                               vector<VectorXd> outputs;
-	                               VectorXd input = inputData.row(i);
-	                               outputs.push_back(input.transpose());
-
-	                               for (int j = 0; j < structure.size() - 1; j++)
+	Concurrency::parallel_for<int>(0, inputData.rows(), 1,
+	                               [&error, &outs, &mtx, inputData, structure, AEweights, AEbiases](int i)
 	                               {
-		                               VectorXd inputs = (outputs[j].transpose() * AEweights[j] + AEbiases[j].transpose());
-		                               VectorXd output;
-		                               if (j == structure.size() - 2)
+		                               //	feedforward proccess
+		                               vector<VectorXd> outputs;
+		                               VectorXd input = inputData.row(i);
+		                               outputs.push_back(input.transpose());
+
+		                               for (int j = 0; j < structure.size() - 1; j++)
 		                               {
-			                               output = outputActivationFunc(inputs);
+			                               VectorXd inputs = (outputs[j].transpose() * AEweights[j] + AEbiases[j].transpose());
+			                               VectorXd output;
+			                               if (j == structure.size() - 2)
+			                               {
+				                               output = outputActivationFunc(inputs);
+			                               }
+			                               else
+			                               {
+				                               output = activationFunc(inputs);
+			                               }
+			                               outputs.push_back(output);
 		                               }
-		                               else
-		                               {
-			                               output = activationFunc(inputs);
-		                               }
-		                               outputs.push_back(output);
-	                               }
-	                               mtx.lock();
-	                               outs[i] = outputs[structure.size() - 1].sum();
-	                               mtx.unlock();
-	                               error += errorFunc(outputs[structure.size() - 1], input);
-                               });
+		                               mtx.lock();
+		                               outs[i] = outputs[structure.size() - 1].sum();
+		                               mtx.unlock();
+		                               error += errorFunc(outputs[structure.size() - 1], input);
+	                               });
 	return error / inputData.rows();
 	//	return error;
 }
 
-void pretrainProccess(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases, VectorXd input)
+void pretrainProccess(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases,
+                      VectorXd input)
 {
 	//	feedforward proccess
 	vector<VectorXd> outputs;
