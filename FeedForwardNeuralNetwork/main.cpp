@@ -362,36 +362,6 @@ double validate(vector<int> const& structure, bool show)
 		error += errorFunc(outputs[structure.size() - 1], teach);
 	});
 
-	//	if (show && typeid(dataSet) == typeid(FuncApproxDataSet))
-	//	{
-	//		dataSet.update(outs);
-	//	}
-
-	//	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
-	//	{
-	//		//	feedforward proccess
-	//		std::vector<Eigen::VectorXd> outputs;
-	//		outputs.push_back(dataSet.testDataSet.row(i).transpose());
-	//
-	//		for (int j = 0; j < structure.size() - 1; j++)
-	//		{
-	//			Eigen::VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
-	//			Eigen::VectorXd output;
-	//			if (useSoftmax && j == structure.size() - 2)
-	//			{
-	//				output = softmax(inputs);
-	//			}
-	//			else
-	//			{
-	//				output = activationFunc(inputs);
-	//			}
-	//			outputs.push_back(output);
-	//		}
-	//
-	//		Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
-	//		error += errorFunc(outputs[structure.size() - 1], teach);
-	//	}
-	//	return error;
 	return error / dataSet.testDataSet.rows();
 }
 

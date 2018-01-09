@@ -55,7 +55,6 @@ const std::vector<double> initVals = {1.0};
 #define LEARNING_TIME 100000
 #define ERROR_BOTTOM 0.001
 TwoSpiralDataSet dataSet;
-
 const std::vector<std::vector<int>> structures = {
 	{2, 5, 5, 5, 1}, {2, 10, 10, 10, 1}, {2, 15, 15, 15, 1}, {2, 20, 20, 20, 1}
 };
@@ -75,20 +74,14 @@ inline Eigen::VectorXd differential(Eigen::VectorXd const& input)
 
 inline Eigen::VectorXd outputActivationFunc(Eigen::VectorXd const& inputs)
 {
-	if (dataSet.useSoftmax)
-	{
-		return softmax(inputs);
-	}
+	if (dataSet.useSoftmax) { return softmax(inputs); }
 	//	return inputs;
 	return activationFunc(inputs);
 }
 
 inline Eigen::VectorXd outputDifferential(Eigen::VectorXd const& input)
 {
-	if (dataSet.useSoftmax)
-	{
-		return Eigen::VectorXd::Ones(input.size());
-	}
+	if (dataSet.useSoftmax) { return Eigen::VectorXd::Ones(input.size()); }
 	//	return Eigen::VectorXd::Ones(input.size());
 	return differential(input);
 }
