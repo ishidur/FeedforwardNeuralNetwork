@@ -68,7 +68,7 @@ inline Eigen::VectorXd activationFunc(Eigen::VectorXd const& inputs)
 
 inline Eigen::VectorXd differential(Eigen::VectorXd const& input)
 {
-	Eigen::VectorXd result = differentialSigmoid(input);
+	Eigen::VectorXd result = differential_sigmoid(input);
 	return result;
 }
 

@@ -9,5 +9,8 @@ public:
 	Eigen::MatrixXd testTeachSet;
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 	TwoSpiralDataSet();
+	/**
+	 * \brief create dataset
+	 */
 	void load();
 };

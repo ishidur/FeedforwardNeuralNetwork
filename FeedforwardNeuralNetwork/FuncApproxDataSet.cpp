@@ -31,10 +31,7 @@ void FuncApproxDataSet::load()
 	testTeachSet.col(0) = t.unaryExpr(func);
 	std::ofstream ofs("FunctionData.csv");
 	ofs << "x, y" << std::endl;
-	for (int i = 0; i < TRAIN_DATA_NUM; ++i)
-	{
-		ofs << dataSet.row(i) << ", " << teachSet.row(i) << std::endl;
-	}
+	for (int i = 0; i < TRAIN_DATA_NUM; ++i) { ofs << dataSet.row(i) << ", " << teachSet.row(i) << std::endl; }
 	ofs.close();
 }
 
@@ -48,16 +45,10 @@ void FuncApproxDataSet::show()
 	fprintf(fp, "set xlabel \"x\"\n");
 	fprintf(fp, "set ylabel \"y\"\n");
 	fprintf(fp, "plot '-' with lines linetype 1\n");
-	for (int i = 0; i < TEST_DATA_NUM; ++i)
-	{
-		fprintf(fp, "%f\t%f\n", testDataSet.col(0)[i], testTeachSet.col(0)[i]);
-	}
+	for (int i = 0; i < TEST_DATA_NUM; ++i) { fprintf(fp, "%f\t%f\n", testDataSet.col(0)[i], testTeachSet.col(0)[i]); }
 	fprintf(fp, "e\n");
 	fprintf(fp, "plot '-' with points pointtype 1\n");
-	for (int i = 0; i < TRAIN_DATA_NUM; ++i)
-	{
-		fprintf(fp, "%f\t%f\n", dataSet.col(0)[i], teachSet.col(0)[i]);
-	}
+	for (int i = 0; i < TRAIN_DATA_NUM; ++i) { fprintf(fp, "%f\t%f\n", dataSet.col(0)[i], teachSet.col(0)[i]); }
 	fprintf(fp, "e\n");
 	fprintf(fp, "unset multiplot\n");
 	fflush(fp);
@@ -68,16 +59,10 @@ void FuncApproxDataSet::update(Eigen::VectorXd outputs)
 	fprintf(fp, "clear\n");
 	fprintf(fp, "set multiplot\n");
 	fprintf(fp, "plot '-' with lines linetype 1\n");
-	for (int i = 0; i < TEST_DATA_NUM; ++i)
-	{
-		fprintf(fp, "%f\t%f\n", testDataSet.col(0)[i], testTeachSet.col(0)[i]);
-	}
+	for (int i = 0; i < TEST_DATA_NUM; ++i) { fprintf(fp, "%f\t%f\n", testDataSet.col(0)[i], testTeachSet.col(0)[i]); }
 	fprintf(fp, "e\n");
 	fprintf(fp, "plot '-' with points pointtype 1\n");
-	for (int i = 0; i < TEST_DATA_NUM; ++i)
-	{
-		fprintf(fp, "%f\t%f\n", testDataSet.col(0)[i], outputs[i]);
-	}
+	for (int i = 0; i < TEST_DATA_NUM; ++i) { fprintf(fp, "%f\t%f\n", testDataSet.col(0)[i], outputs[i]); }
 	fprintf(fp, "e\n");
 	fprintf(fp, "unset multiplot\n");
 	fflush(fp);

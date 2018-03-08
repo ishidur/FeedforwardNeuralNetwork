@@ -15,5 +15,8 @@ public:
 	Eigen::MatrixXd testTeachSet;
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 	MNISTDataSet();
+	/**
+	 * \brief create dataset
+	 */
 	void load();
 };

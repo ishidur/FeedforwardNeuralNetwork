@@ -24,25 +24,56 @@ using namespace Eigen;
 vector<MatrixXd> weights;
 vector<VectorXd> biases;
 
-void initWeightsAndBiases(vector<int> const& structure, double iniitalVal)
+/**
+ * \brief initialize weight and bias
+ * \param structure array
+ * \param inital_val value range
+ */
+void init_weights_and_biases(vector<int> const& structure, double inital_val)
 {
 	weights.clear();
 	biases.clear();
 	for (int i = 1; i < structure.size(); ++i)
 	{
-		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * iniitalVal);
-		biases.push_back(VectorXd::Random(structure[i]) * iniitalVal);
+		weights.push_back(MatrixXd::Random(structure[i - 1], structure[i]) * inital_val);
+		biases.push_back(VectorXd::Random(structure[i]) * inital_val);
 	}
 }
 
-void Softmaxtest(vector<int> const& structure, ostream& out = cout);
-double learnProccess(vector<int> const& structure, int iterator, VectorXd const& input, VectorXd const& teachData,
-                     ostream& out = cout);
+/**
+ * \brief softmax evaluation
+ * \param structure 
+ * \param out 
+ */
+void softmax_test(vector<int> const& structure, ostream& out = cout);
+/**
+ * \brief calcurate output and backpropagate error
+ * \param structure 
+ * \param iterator 
+ * \param input 
+ * \param teachData 
+ * \param out 
+ * \return 
+ */
+double learn_proccess(vector<int> const& structure, int iterator, VectorXd const& input, VectorXd const& teachData,
+                      ostream& out = cout);
+/**
+ * \brief pretraining with autoencoder
+ * \param structure 
+ * \param out 
+ */
 void pretrain(vector<int> const& structure, ostream& out = cout);
 
-tuple<double, int> singleRun(vector<int> const& structure, double const& initVal, string filename)
+/**
+ * \brief learn single network
+ * \param structure 
+ * \param initVal 
+ * \param filename 
+ * \return 
+ */
+tuple<double, int> single_run(vector<int> const& structure, double const& initVal, string filename)
 {
-	initWeightsAndBiases(structure, initVal);
+	init_weights_and_biases(structure, initVal);
 	if (needPretrain)
 	{
 		//pretraining process
@@ -57,15 +88,9 @@ tuple<double, int> singleRun(vector<int> const& structure, double const& initVal
 	{
 		for (int j = 0; j < weights[i].rows(); ++j)
 		{
-			for (int k = 0; k < weights[i].cols(); ++k)
-			{
-				ofs << "weight:" << "l:" << i << ":" << j << ":" << k << ", ";
-			}
+			for (int k = 0; k < weights[i].cols(); ++k) { ofs << "weight:" << "l:" << i << ":" << j << ":" << k << ", "; }
 		}
-		for (int j = 0; j < biases[i].size(); ++j)
-		{
-			ofs << "bias:" << "l:" << i << ":" << j << ", ";
-		}
+		for (int j = 0; j < biases[i].size(); ++j) { ofs << "bias:" << "l:" << i << ":" << j << ", "; }
 	}
 	ofs << "error" << endl;
 	//	std::string progress = "";
@@ -91,31 +116,22 @@ tuple<double, int> singleRun(vector<int> const& structure, double const& initVal
 		{
 			s++;
 			double status = double((s) * 100.0 / (ns.size() * LEARNING_TIME));
-			if (progress.size() < int(status) / 5)
-			{
-				progress += "#";
-			}
+			if (progress.size() < int(status) / 5) { progress += "#"; }
 
 			VectorXd input = dataSet.dataSet.row(n);
 			VectorXd teach = dataSet.teachSet.row(n);
 			if (s % c == 0)
 			{
 				ofs << i << ",";
-				error = learnProccess(structure, s, input, teach, ofs);
+				error = learn_proccess(structure, s, input, teach, ofs);
 				if (error < ERROR_BOTTOM)
 				{
 					times = i;
 					goto learn_end;
 				}
 			}
-			else
-			{
-				error = learnProccess(structure, s, input, teach);
-			}
-			if (std::isnan(error))
-			{
-				goto learn_end;
-			}
+			else { error = learn_proccess(structure, s, input, teach); }
+			if (std::isnan(error)) { goto learn_end; }
 			cout << "progress: " << error << ", " << s << "/ " << (ns.size() * LEARNING_TIME) << " " << progress << "\r" <<
 				flush;
 		}
@@ -147,7 +163,7 @@ learn_end:
 	if (dataSet.useSoftmax)
 	{
 		ofstream ofs2(filename + "-test" + ".csv");
-		Softmaxtest(structure, ofs2);
+		softmax_test(structure, ofs2);
 		ofs2.close();
 	}
 	cout << endl;
@@ -169,10 +185,7 @@ int main()
 		string s = sout.str();
 		dirName += s;
 		dirName += "\\";
-		if (!MakeSureDirectoryPathExists(dirName.c_str()))
-		{
-			break;
-		}
+		if (!MakeSureDirectoryPathExists(dirName.c_str())) { break; }
 		string filename = dirName;
 		filename += "static.csv";
 		ofstream ofs2(filename);
@@ -182,10 +195,7 @@ int main()
 			for (int i = 0; i < structure.size(); ++i)
 			{
 				layers += to_string(structure[i]);
-				if (i < structure.size() - 1)
-				{
-					layers += "X";
-				}
+				if (i < structure.size() - 1) { layers += "X"; }
 			}
 			ofs2 << "structures," << layers << endl;
 			cout << "structures; " << layers << endl;
@@ -205,13 +215,10 @@ int main()
 				cout << fileName << endl;
 				double err;
 				int n;
-				tie(err, n) = singleRun(structure, init_val, fileName);
+				tie(err, n) = single_run(structure, init_val, fileName);
 				ofs2 << "error," << err << ",,learning time," << n << endl;
 				cout << "error; " << err << endl;
-				if (err < ERROR_BOTTOM)
-				{
-					correct++;
-				}
+				if (err < ERROR_BOTTOM) { correct++; }
 			}
 			ofs2 << correct << ", /, " << TRIALS_PER_STRUCTURE << ", success" << endl;
 			cout << correct << " / " << TRIALS_PER_STRUCTURE << " success" << endl;
@@ -222,7 +229,7 @@ int main()
 }
 
 //TODO: didn't work
-void Softmaxtest(vector<int> const& structure, ostream& out)
+void softmax_test(vector<int> const& structure, ostream& out)
 {
 	int correct[10] = {0};
 	int num[10] = {0};
@@ -236,14 +243,8 @@ void Softmaxtest(vector<int> const& structure, ostream& out)
 		{
 			VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
 			VectorXd output;
-			if (j == structure.size() - 2)
-			{
-				output = outputActivationFunc(inputs);
-			}
-			else
-			{
-				output = activationFunc(inputs);
-			}
+			if (j == structure.size() - 2) { output = outputActivationFunc(inputs); }
+			else { output = activationFunc(inputs); }
 			outputs.push_back(output);
 		}
 		vector<double> y;
@@ -265,28 +266,15 @@ void Softmaxtest(vector<int> const& structure, ostream& out)
 		cout << distance(y.begin(), result) << ", " << distance(t.begin(), teach) << endl;
 		int a = distance(t.begin(), teach);
 		num[a]++;
-		if (distance(y.begin(), result) == a)
-		{
-			correct[a]++;
-		}
+		if (distance(y.begin(), result) == a) { correct[a]++; }
 	}
-	for (int i = 0; i < 10; ++i)
-	{
-		out << endl << i << "correct, " << correct[i] << ", /, " << num[i] << endl;
-	}
+	for (int i = 0; i < 10; ++i) { out << endl << i << "correct, " << correct[i] << ", /, " << num[i] << endl; }
 }
 
-auto squared = [](const double x)
-{
-	return x * x;
-};
-auto cross = [](const double x)
-{
-	double y = log(x);
-	return y;
-};
+auto squared = [](const double x) { return x * x; };
+auto cross = [](const double x) { return log(x); };
 
-double errorFunc(VectorXd const& outData, VectorXd const& teachData)
+double error_func(VectorXd const& outData, VectorXd const& teachData)
 {
 	double error;
 	if (dataSet.useSoftmax)
@@ -306,7 +294,7 @@ double errorFunc(VectorXd const& outData, VectorXd const& teachData)
 	return error;
 }
 
-MatrixXd calcDelta(int layerNo, vector<VectorXd> const& output, MatrixXd const& prevDelta)
+MatrixXd calc_delta(int layerNo, vector<VectorXd> const& output, MatrixXd const& prevDelta)
 {
 	VectorXd diff = differential(output[layerNo + 1]);
 	MatrixXd delta = (prevDelta * weights[layerNo + 1].transpose()).array() * diff.transpose().array();
@@ -323,7 +311,7 @@ void backpropergation(vector<int> const& structure, vector<VectorXd> const& outp
 	for (int i = 3; i <= structure.size(); ++i)
 	{
 		int n = structure.size() - i;
-		delta = calcDelta(n, output, delta);
+		delta = calc_delta(n, output, delta);
 		weights[n] -= LEARNING_RATE * output[n] * delta;
 		biases[n] -= LEARNING_RATE * delta.transpose();
 	}
@@ -345,28 +333,22 @@ double validate(vector<int> const& structure, bool show)
 		{
 			VectorXd inputs = (outputs[j].transpose() * weights[j] + biases[j].transpose());
 			VectorXd output;
-			if (j == structure.size() - 2)
-			{
-				output = outputActivationFunc(inputs);
-			}
-			else
-			{
-				output = activationFunc(inputs);
-			}
+			if (j == structure.size() - 2) { output = outputActivationFunc(inputs); }
+			else { output = activationFunc(inputs); }
 			outputs.push_back(output);
 		}
 		mtx.lock();
 		outs[i] = outputs[structure.size() - 1].sum();
 		mtx.unlock();
 		VectorXd teach = dataSet.testTeachSet.row(i);
-		error += errorFunc(outputs[structure.size() - 1], teach);
+		error += error_func(outputs[structure.size() - 1], teach);
 	});
 
 	return error / dataSet.testDataSet.rows();
 }
 
-double learnProccess(vector<int> const& structure, int iterator, VectorXd const& input, VectorXd const& teachData,
-                     ostream& out)
+double learn_proccess(vector<int> const& structure, int iterator, VectorXd const& input, VectorXd const& teachData,
+                      ostream& out)
 {
 	//	feedforward proccess
 	vector<VectorXd> outputs;
@@ -376,14 +358,8 @@ double learnProccess(vector<int> const& structure, int iterator, VectorXd const&
 	{
 		VectorXd inputs = (outputs[i].transpose() * weights[i] + biases[i].transpose());
 		VectorXd output;
-		if (i == structure.size() - 2)
-		{
-			output = outputActivationFunc(inputs);
-		}
-		else
-		{
-			output = activationFunc(inputs);
-		}
+		if (i == structure.size() - 2) { output = outputActivationFunc(inputs); }
+		else { output = activationFunc(inputs); }
 		outputs.push_back(output);
 	}
 	//	backpropergation method
@@ -392,12 +368,12 @@ double learnProccess(vector<int> const& structure, int iterator, VectorXd const&
 
 	if (typeid(dataSet) == typeid(MNISTDataSet))
 	{
-		double error = errorFunc(outputs[structure.size() - 1], teachData);
+		double error = error_func(outputs[structure.size() - 1], teachData);
 		return error;
 	}
 	if (&out == &cout)
 	{
-		double error = errorFunc(outputs[structure.size() - 1], teachData);
+		double error = error_func(outputs[structure.size() - 1], teachData);
 		return error;
 	}
 
@@ -406,15 +382,9 @@ double learnProccess(vector<int> const& structure, int iterator, VectorXd const&
 	{
 		for (int j = 0; j < weights[i].rows(); ++j)
 		{
-			for (int k = 0; k < weights[i].cols(); ++k)
-			{
-				out << weights[i](j, k) << ", ";
-			}
+			for (int k = 0; k < weights[i].cols(); ++k) { out << weights[i](j, k) << ", "; }
 		}
-		for (int j = 0; j < biases[i].size(); ++j)
-		{
-			out << biases[i][j] << ", ";
-		}
+		for (int j = 0; j < biases[i].size(); ++j) { out << biases[i][j] << ", "; }
 	}
 	out << error << endl;
 	return error;
@@ -444,8 +414,8 @@ void pretrainBP(vector<int> const& structure, vector<MatrixXd>& AEweights, vecto
 	}
 }
 
-double pretrainValidate(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases,
-                        MatrixXd& inputData)
+double pretrain_validate(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases,
+                         MatrixXd& inputData)
 {
 	double error = 0.0;
 	VectorXd outs = VectorXd::Zero(inputData.rows());
@@ -463,27 +433,21 @@ double pretrainValidate(vector<int> const& structure, vector<MatrixXd>& AEweight
 		                               {
 			                               VectorXd inputs = (outputs[j].transpose() * AEweights[j] + AEbiases[j].transpose());
 			                               VectorXd output;
-			                               if (j == structure.size() - 2)
-			                               {
-				                               output = outputActivationFunc(inputs);
-			                               }
-			                               else
-			                               {
-				                               output = activationFunc(inputs);
-			                               }
+			                               if (j == structure.size() - 2) { output = outputActivationFunc(inputs); }
+			                               else { output = activationFunc(inputs); }
 			                               outputs.push_back(output);
 		                               }
 		                               mtx.lock();
 		                               outs[i] = outputs[structure.size() - 1].sum();
 		                               mtx.unlock();
-		                               error += errorFunc(outputs[structure.size() - 1], input);
+		                               error += error_func(outputs[structure.size() - 1], input);
 	                               });
 	return error / inputData.rows();
 	//	return error;
 }
 
-void pretrainProccess(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases,
-                      VectorXd input)
+void pretrain_proccess(vector<int> const& structure, vector<MatrixXd>& AEweights, vector<VectorXd>& AEbiases,
+                       VectorXd input)
 {
 	//	feedforward proccess
 	vector<VectorXd> outputs;
@@ -508,16 +472,13 @@ void pretrain(vector<int> const& structure, ostream& out)
 	for (int k = 0; k < inputData.rows(); ++k)
 	{
 		out << "inputData" << endl;
-		for (int l = 0; l < inputData.cols(); ++l)
-		{
-			out << inputData(k, l) << ",";
-		}
+		for (int l = 0; l < inputData.cols(); ++l) { out << inputData(k, l) << ","; }
 		out << endl;
 	}
 	for (int i = 0; i < structure.size() - 2; ++i)
 	{
 		//init autoencoder
-		vector<int> AEstructure = {structure[i],structure[i + 1],structure[i]};
+		vector<int> AEstructure = {structure[i], structure[i + 1], structure[i]};
 		vector<MatrixXd> AEweights = {weights[i], weights[i].transpose()};
 		vector<VectorXd> AEbiases = {biases[i], VectorXd::Zero(AEstructure[2])};
 		int inputDataSize = inputData.rows();
@@ -531,8 +492,8 @@ void pretrain(vector<int> const& structure, ostream& out)
 			for (int n : ns)
 			{
 				VectorXd input = inputData.row(n);
-				pretrainProccess(AEstructure, AEweights, AEbiases, input);
-				error = pretrainValidate(AEstructure, AEweights, AEbiases, inputData);
+				pretrain_proccess(AEstructure, AEweights, AEbiases, input);
+				error = pretrain_validate(AEstructure, AEweights, AEbiases, inputData);
 				cout << "error: " << error << "\r" << flush;
 			}
 			if (error < PRETRAIN_ERROR_BOTTOM)
@@ -553,11 +514,7 @@ void pretrain(vector<int> const& structure, ostream& out)
 			for (int l = 0; l < middleData.cols(); ++l)
 			{
 				out << middleData(k, l);
-
-				if (l < cols - 1)
-				{
-					out << ",";
-				}
+				if (l < cols - 1) { out << ","; }
 			}
 			out << endl;
 		}
