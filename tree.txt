@@ -1,0 +1,525 @@
+フォルダー パスの一覧:  ボリューム Temp
+ボリューム シリアル番号は 5CA398E3 7EFB:1222 です
+D:.
+│  .gitattributes
+│  .gitignore
+│  FeedforwardNeuralNetwork.sln
+│  FeedforwardNeuralNetwork.VC.db
+│  README.md
+│  tree.txt
+│  
+├─Debug
+│      FeedForwardNeuralNetwork.exe
+│      FeedForwardNeuralNetwork.ilk
+│      FeedForwardNeuralNetwork.pdb
+│      
+├─FeedforwardNeuralNetwork
+│  │  ActivationFunctions.cpp
+│  │  ActivationFunctions.h
+│  │  config.h
+│  │  FeedforwardNeuralNetwork.rc
+│  │  FeedForwardNeuralNetwork.vcxproj
+│  │  FeedForwardNeuralNetwork.vcxproj.filters
+│  │  FeedforwardNeuralNetwork.vcxproj.user
+│  │  FuncApproxDataSet.cpp
+│  │  FuncApproxDataSet.h
+│  │  FunctionData.csv
+│  │  main.cpp
+│  │  MNISTDataSet.cpp
+│  │  MNISTDataSet.h
+│  │  ReadMe.txt
+│  │  stdafx.cpp
+│  │  stdafx.h
+│  │  targetver.h
+│  │  TwoSpiralData.csv
+│  │  TwoSpiralDataSet.cpp
+│  │  TwoSpiralDataSet.h
+│  │  XORDataSet.cpp
+│  │  XORDataSet.h
+│  │  
+│  ├─data
+│  │  ├─0.010000
+│  │  │      reluresult-3-layers-1X8X1-1505895547.csv
+│  │  │      result-4-layers-2X3X3X1-1506481374.csv
+│  │  │      sigmoidresult-3-layers-1X8X1-1505894842.csv
+│  │  │      
+│  │  └─1.000000
+│  │          result-5-layers-2X10X10X10X1-1506613440.csv
+│  │          result-5-layers-2X10X10X10X1-1508119325-ae.csv
+│  │          result-5-layers-2X10X10X10X1-1508119325.csv
+│  │          result-5-layers-2X15X15X15X1-1506632890.csv
+│  │          result-5-layers-2X15X15X15X1-1508121567-ae.csv
+│  │          result-5-layers-2X15X15X15X1-1508121567.csv
+│  │          result-5-layers-2X20X20X20X1-1506655748.csv
+│  │          result-5-layers-2X5X5X5X1-1506596264.csv
+│  │          result-5-layers-2X5X5X5X1-1508117242-ae.csv
+│  │          result-5-layers-2X5X5X5X1-1508117242.csv
+│  │          
+│  ├─Debug
+│  │  │  ActivationFunctions.obj
+│  │  │  FeedForwardNeuralNetwork.log
+│  │  │  FeedForwardNeuralNetwork.pch
+│  │  │  FeedForwardNeuralNetwork.res
+│  │  │  FuncApproxDataSet.obj
+│  │  │  main.obj
+│  │  │  MNISTDataSet.obj
+│  │  │  stdafx.obj
+│  │  │  TwoSpiralDataSet.obj
+│  │  │  vc140.idb
+│  │  │  vc140.pdb
+│  │  │  vc141.idb
+│  │  │  vc141.pdb
+│  │  │  XORDataSet.obj
+│  │  │  
+│  │  └─FeedForw.DEC854A4.tlog
+│  │          CL.command.1.tlog
+│  │          CL.read.1.tlog
+│  │          CL.write.1.tlog
+│  │          FeedForwardNeuralNetwork.lastbuildstate
+│  │          link.command.1.tlog
+│  │          link.read.1.tlog
+│  │          link.write.1.tlog
+│  │          rc.command.1.tlog
+│  │          rc.read.1.tlog
+│  │          rc.write.1.tlog
+│  │          
+│  ├─Eigen
+│  │  │  Cholesky
+│  │  │  CholmodSupport
+│  │  │  CMakeLists.txt
+│  │  │  Core
+│  │  │  Dense
+│  │  │  Eigen
+│  │  │  Eigenvalues
+│  │  │  Geometry
+│  │  │  Householder
+│  │  │  IterativeLinearSolvers
+│  │  │  Jacobi
+│  │  │  LU
+│  │  │  MetisSupport
+│  │  │  OrderingMethods
+│  │  │  PardisoSupport
+│  │  │  PaStiXSupport
+│  │  │  QR
+│  │  │  QtAlignedMalloc
+│  │  │  Sparse
+│  │  │  SparseCholesky
+│  │  │  SparseCore
+│  │  │  SparseLU
+│  │  │  SparseQR
+│  │  │  SPQRSupport
+│  │  │  StdDeque
+│  │  │  StdList
+│  │  │  StdVector
+│  │  │  SuperLUSupport
+│  │  │  SVD
+│  │  │  UmfPackSupport
+│  │  │  
+│  │  └─src
+│  │      ├─Cholesky
+│  │      │      LDLT.h
+│  │      │      LLT.h
+│  │      │      LLT_LAPACKE.h
+│  │      │      
+│  │      ├─CholmodSupport
+│  │      │      CholmodSupport.h
+│  │      │      
+│  │      ├─Core
+│  │      │  │  Array.h
+│  │      │  │  ArrayBase.h
+│  │      │  │  ArrayWrapper.h
+│  │      │  │  Assign.h
+│  │      │  │  AssignEvaluator.h
+│  │      │  │  Assign_MKL.h
+│  │      │  │  BandMatrix.h
+│  │      │  │  Block.h
+│  │      │  │  BooleanRedux.h
+│  │      │  │  CommaInitializer.h
+│  │      │  │  ConditionEstimator.h
+│  │      │  │  CoreEvaluators.h
+│  │      │  │  CoreIterators.h
+│  │      │  │  CwiseBinaryOp.h
+│  │      │  │  CwiseNullaryOp.h
+│  │      │  │  CwiseTernaryOp.h
+│  │      │  │  CwiseUnaryOp.h
+│  │      │  │  CwiseUnaryView.h
+│  │      │  │  DenseBase.h
+│  │      │  │  DenseCoeffsBase.h
+│  │      │  │  DenseStorage.h
+│  │      │  │  Diagonal.h
+│  │      │  │  DiagonalMatrix.h
+│  │      │  │  DiagonalProduct.h
+│  │      │  │  Dot.h
+│  │      │  │  EigenBase.h
+│  │      │  │  ForceAlignedAccess.h
+│  │      │  │  Fuzzy.h
+│  │      │  │  GeneralProduct.h
+│  │      │  │  GenericPacketMath.h
+│  │      │  │  GlobalFunctions.h
+│  │      │  │  Inverse.h
+│  │      │  │  IO.h
+│  │      │  │  Map.h
+│  │      │  │  MapBase.h
+│  │      │  │  MathFunctions.h
+│  │      │  │  MathFunctionsImpl.h
+│  │      │  │  Matrix.h
+│  │      │  │  MatrixBase.h
+│  │      │  │  NestByValue.h
+│  │      │  │  NoAlias.h
+│  │      │  │  NumTraits.h
+│  │      │  │  PermutationMatrix.h
+│  │      │  │  PlainObjectBase.h
+│  │      │  │  Product.h
+│  │      │  │  ProductEvaluators.h
+│  │      │  │  Random.h
+│  │      │  │  Redux.h
+│  │      │  │  Ref.h
+│  │      │  │  Replicate.h
+│  │      │  │  ReturnByValue.h
+│  │      │  │  Reverse.h
+│  │      │  │  Select.h
+│  │      │  │  SelfAdjointView.h
+│  │      │  │  SelfCwiseBinaryOp.h
+│  │      │  │  Solve.h
+│  │      │  │  SolverBase.h
+│  │      │  │  SolveTriangular.h
+│  │      │  │  StableNorm.h
+│  │      │  │  Stride.h
+│  │      │  │  Swap.h
+│  │      │  │  Transpose.h
+│  │      │  │  Transpositions.h
+│  │      │  │  TriangularMatrix.h
+│  │      │  │  VectorBlock.h
+│  │      │  │  VectorwiseOp.h
+│  │      │  │  Visitor.h
+│  │      │  │  
+│  │      │  ├─arch
+│  │      │  │  ├─AltiVec
+│  │      │  │  │      Complex.h
+│  │      │  │  │      MathFunctions.h
+│  │      │  │  │      PacketMath.h
+│  │      │  │  │      
+│  │      │  │  ├─AVX
+│  │      │  │  │      Complex.h
+│  │      │  │  │      MathFunctions.h
+│  │      │  │  │      PacketMath.h
+│  │      │  │  │      TypeCasting.h
+│  │      │  │  │      
+│  │      │  │  ├─AVX512
+│  │      │  │  │      MathFunctions.h
+│  │      │  │  │      PacketMath.h
+│  │      │  │  │      
+│  │      │  │  ├─CUDA
+│  │      │  │  │      Complex.h
+│  │      │  │  │      Half.h
+│  │      │  │  │      MathFunctions.h
+│  │      │  │  │      PacketMath.h
+│  │      │  │  │      PacketMathHalf.h
+│  │      │  │  │      TypeCasting.h
+│  │      │  │  │      
+│  │      │  │  ├─Default
+│  │      │  │  │      Settings.h
+│  │      │  │  │      
+│  │      │  │  ├─NEON
+│  │      │  │  │      Complex.h
+│  │      │  │  │      MathFunctions.h
+│  │      │  │  │      PacketMath.h
+│  │      │  │  │      
+│  │      │  │  ├─SSE
+│  │      │  │  │      Complex.h
+│  │      │  │  │      MathFunctions.h
+│  │      │  │  │      PacketMath.h
+│  │      │  │  │      TypeCasting.h
+│  │      │  │  │      
+│  │      │  │  └─ZVector
+│  │      │  │          Complex.h
+│  │      │  │          MathFunctions.h
+│  │      │  │          PacketMath.h
+│  │      │  │          
+│  │      │  ├─functors
+│  │      │  │      AssignmentFunctors.h
+│  │      │  │      BinaryFunctors.h
+│  │      │  │      NullaryFunctors.h
+│  │      │  │      StlFunctors.h
+│  │      │  │      TernaryFunctors.h
+│  │      │  │      UnaryFunctors.h
+│  │      │  │      
+│  │      │  ├─products
+│  │      │  │      GeneralBlockPanelKernel.h
+│  │      │  │      GeneralMatrixMatrix.h
+│  │      │  │      GeneralMatrixMatrixTriangular.h
+│  │      │  │      GeneralMatrixMatrixTriangular_BLAS.h
+│  │      │  │      GeneralMatrixMatrix_BLAS.h
+│  │      │  │      GeneralMatrixVector.h
+│  │      │  │      GeneralMatrixVector_BLAS.h
+│  │      │  │      Parallelizer.h
+│  │      │  │      SelfadjointMatrixMatrix.h
+│  │      │  │      SelfadjointMatrixMatrix_BLAS.h
+│  │      │  │      SelfadjointMatrixVector.h
+│  │      │  │      SelfadjointMatrixVector_BLAS.h
+│  │      │  │      SelfadjointProduct.h
+│  │      │  │      SelfadjointRank2Update.h
+│  │      │  │      TriangularMatrixMatrix.h
+│  │      │  │      TriangularMatrixMatrix_BLAS.h
+│  │      │  │      TriangularMatrixVector.h
+│  │      │  │      TriangularMatrixVector_BLAS.h
+│  │      │  │      TriangularSolverMatrix.h
+│  │      │  │      TriangularSolverMatrix_BLAS.h
+│  │      │  │      TriangularSolverVector.h
+│  │      │  │      
+│  │      │  └─util
+│  │      │          BlasUtil.h
+│  │      │          Constants.h
+│  │      │          DisableStupidWarnings.h
+│  │      │          ForwardDeclarations.h
+│  │      │          Macros.h
+│  │      │          Memory.h
+│  │      │          Meta.h
+│  │      │          MKL_support.h
+│  │      │          NonMPL2.h
+│  │      │          ReenableStupidWarnings.h
+│  │      │          StaticAssert.h
+│  │      │          XprHelper.h
+│  │      │          
+│  │      ├─Eigenvalues
+│  │      │      ComplexEigenSolver.h
+│  │      │      ComplexSchur.h
+│  │      │      ComplexSchur_LAPACKE.h
+│  │      │      EigenSolver.h
+│  │      │      GeneralizedEigenSolver.h
+│  │      │      GeneralizedSelfAdjointEigenSolver.h
+│  │      │      HessenbergDecomposition.h
+│  │      │      MatrixBaseEigenvalues.h
+│  │      │      RealQZ.h
+│  │      │      RealSchur.h
+│  │      │      RealSchur_LAPACKE.h
+│  │      │      SelfAdjointEigenSolver.h
+│  │      │      SelfAdjointEigenSolver_LAPACKE.h
+│  │      │      Tridiagonalization.h
+│  │      │      
+│  │      ├─Geometry
+│  │      │  │  AlignedBox.h
+│  │      │  │  AngleAxis.h
+│  │      │  │  EulerAngles.h
+│  │      │  │  Homogeneous.h
+│  │      │  │  Hyperplane.h
+│  │      │  │  OrthoMethods.h
+│  │      │  │  ParametrizedLine.h
+│  │      │  │  Quaternion.h
+│  │      │  │  Rotation2D.h
+│  │      │  │  RotationBase.h
+│  │      │  │  Scaling.h
+│  │      │  │  Transform.h
+│  │      │  │  Translation.h
+│  │      │  │  Umeyama.h
+│  │      │  │  
+│  │      │  └─arch
+│  │      │          Geometry_SSE.h
+│  │      │          
+│  │      ├─Householder
+│  │      │      BlockHouseholder.h
+│  │      │      Householder.h
+│  │      │      HouseholderSequence.h
+│  │      │      
+│  │      ├─IterativeLinearSolvers
+│  │      │      BasicPreconditioners.h
+│  │      │      BiCGSTAB.h
+│  │      │      ConjugateGradient.h
+│  │      │      IncompleteCholesky.h
+│  │      │      IncompleteLUT.h
+│  │      │      IterativeSolverBase.h
+│  │      │      LeastSquareConjugateGradient.h
+│  │      │      SolveWithGuess.h
+│  │      │      
+│  │      ├─Jacobi
+│  │      │      Jacobi.h
+│  │      │      
+│  │      ├─LU
+│  │      │  │  Determinant.h
+│  │      │  │  FullPivLU.h
+│  │      │  │  InverseImpl.h
+│  │      │  │  PartialPivLU.h
+│  │      │  │  PartialPivLU_LAPACKE.h
+│  │      │  │  
+│  │      │  └─arch
+│  │      │          Inverse_SSE.h
+│  │      │          
+│  │      ├─MetisSupport
+│  │      │      MetisSupport.h
+│  │      │      
+│  │      ├─misc
+│  │      │      blas.h
+│  │      │      Image.h
+│  │      │      Kernel.h
+│  │      │      lapack.h
+│  │      │      lapacke.h
+│  │      │      lapacke_mangling.h
+│  │      │      RealSvd2x2.h
+│  │      │      
+│  │      ├─OrderingMethods
+│  │      │      Amd.h
+│  │      │      Eigen_Colamd.h
+│  │      │      Ordering.h
+│  │      │      
+│  │      ├─PardisoSupport
+│  │      │      PardisoSupport.h
+│  │      │      
+│  │      ├─PaStiXSupport
+│  │      │      PaStiXSupport.h
+│  │      │      
+│  │      ├─plugins
+│  │      │      ArrayCwiseBinaryOps.h
+│  │      │      ArrayCwiseUnaryOps.h
+│  │      │      BlockMethods.h
+│  │      │      CommonCwiseBinaryOps.h
+│  │      │      CommonCwiseUnaryOps.h
+│  │      │      MatrixCwiseBinaryOps.h
+│  │      │      MatrixCwiseUnaryOps.h
+│  │      │      
+│  │      ├─QR
+│  │      │      ColPivHouseholderQR.h
+│  │      │      ColPivHouseholderQR_LAPACKE.h
+│  │      │      CompleteOrthogonalDecomposition.h
+│  │      │      FullPivHouseholderQR.h
+│  │      │      HouseholderQR.h
+│  │      │      HouseholderQR_LAPACKE.h
+│  │      │      
+│  │      ├─SparseCholesky
+│  │      │      SimplicialCholesky.h
+│  │      │      SimplicialCholesky_impl.h
+│  │      │      
+│  │      ├─SparseCore
+│  │      │      AmbiVector.h
+│  │      │      CompressedStorage.h
+│  │      │      ConservativeSparseSparseProduct.h
+│  │      │      MappedSparseMatrix.h
+│  │      │      SparseAssign.h
+│  │      │      SparseBlock.h
+│  │      │      SparseColEtree.h
+│  │      │      SparseCompressedBase.h
+│  │      │      SparseCwiseBinaryOp.h
+│  │      │      SparseCwiseUnaryOp.h
+│  │      │      SparseDenseProduct.h
+│  │      │      SparseDiagonalProduct.h
+│  │      │      SparseDot.h
+│  │      │      SparseFuzzy.h
+│  │      │      SparseMap.h
+│  │      │      SparseMatrix.h
+│  │      │      SparseMatrixBase.h
+│  │      │      SparsePermutation.h
+│  │      │      SparseProduct.h
+│  │      │      SparseRedux.h
+│  │      │      SparseRef.h
+│  │      │      SparseSelfAdjointView.h
+│  │      │      SparseSolverBase.h
+│  │      │      SparseSparseProductWithPruning.h
+│  │      │      SparseTranspose.h
+│  │      │      SparseTriangularView.h
+│  │      │      SparseUtil.h
+│  │      │      SparseVector.h
+│  │      │      SparseView.h
+│  │      │      TriangularSolver.h
+│  │      │      
+│  │      ├─SparseLU
+│  │      │      SparseLU.h
+│  │      │      SparseLUImpl.h
+│  │      │      SparseLU_column_bmod.h
+│  │      │      SparseLU_column_dfs.h
+│  │      │      SparseLU_copy_to_ucol.h
+│  │      │      SparseLU_gemm_kernel.h
+│  │      │      SparseLU_heap_relax_snode.h
+│  │      │      SparseLU_kernel_bmod.h
+│  │      │      SparseLU_Memory.h
+│  │      │      SparseLU_panel_bmod.h
+│  │      │      SparseLU_panel_dfs.h
+│  │      │      SparseLU_pivotL.h
+│  │      │      SparseLU_pruneL.h
+│  │      │      SparseLU_relax_snode.h
+│  │      │      SparseLU_Structs.h
+│  │      │      SparseLU_SupernodalMatrix.h
+│  │      │      SparseLU_Utils.h
+│  │      │      
+│  │      ├─SparseQR
+│  │      │      SparseQR.h
+│  │      │      
+│  │      ├─SPQRSupport
+│  │      │      SuiteSparseQRSupport.h
+│  │      │      
+│  │      ├─StlSupport
+│  │      │      details.h
+│  │      │      StdDeque.h
+│  │      │      StdList.h
+│  │      │      StdVector.h
+│  │      │      
+│  │      ├─SuperLUSupport
+│  │      │      SuperLUSupport.h
+│  │      │      
+│  │      ├─SVD
+│  │      │      BDCSVD.h
+│  │      │      JacobiSVD.h
+│  │      │      JacobiSVD_LAPACKE.h
+│  │      │      SVDBase.h
+│  │      │      UpperBidiagonalization.h
+│  │      │      
+│  │      └─UmfPackSupport
+│  │              UmfPackSupport.h
+│  │              
+│  ├─MNISTData
+│  │  ├─GZ
+│  │  │      t10k-images-idx3-ubyte.gz
+│  │  │      t10k-labels-idx1-ubyte.gz
+│  │  │      train-images-idx3-ubyte.gz
+│  │  │      train-labels-idx1-ubyte.gz
+│  │  │      
+│  │  ├─t10k-images-idx3-ubyte
+│  │  │      t10k-images.idx3-ubyte
+│  │  │      
+│  │  ├─t10k-labels-idx1-ubyte
+│  │  │      t10k-labels.idx1-ubyte
+│  │  │      
+│  │  ├─train-images-idx3-ubyte
+│  │  │      train-images.idx3-ubyte
+│  │  │      
+│  │  └─train-labels-idx1-ubyte
+│  │          train-labels.idx1-ubyte
+│  │          
+│  └─x64
+│      └─Debug
+│          │  ActivationFunctions.obj
+│          │  FeedForwardNeuralNetwork.Build.CppClean.log
+│          │  FeedForwardNeuralNetwork.log
+│          │  FeedForwardNeuralNetwork.pch
+│          │  FeedForwardNeuralNetwork.res
+│          │  FuncApproxDataSet.obj
+│          │  main.obj
+│          │  MNISTDataSet.obj
+│          │  RCa07020
+│          │  stdafx.obj
+│          │  TwoSpiralDataSet.obj
+│          │  vc140.idb
+│          │  vc140.pdb
+│          │  XORDataSet.obj
+│          │  
+│          └─FeedForw.DEC854A4.tlog
+│                  CL.command.1.tlog
+│                  CL.read.1.tlog
+│                  CL.write.1.tlog
+│                  FeedForwardNeuralNetwork.lastbuildstate
+│                  link.command.1.tlog
+│                  link.read.1.tlog
+│                  link.write.1.tlog
+│                  rc.command.1.tlog
+│                  rc.read.1.tlog
+│                  rc.write.1.tlog
+│                  
+├─ipch
+│  └─FEEDFORWARDNEURALNETWORK-296ddbd2
+│          FEEDFORWARDNEURALNETWORK-78bc96e4.ipch
+│          FEEDFORWARDNEURALNETWORK-a5a87146.ipch
+│          
+└─x64
+    └─Debug
+            FeedForwardNeuralNetwork.exe
+            FeedForwardNeuralNetwork.ilk
+            FeedforwardNeuralNetwork.pdb
+            
