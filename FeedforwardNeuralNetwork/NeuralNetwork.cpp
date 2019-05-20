@@ -3,12 +3,12 @@
 #include "MNISTDataSet.h"
 #include <numeric>
 
-NeuralNetwork::NeuralNetwork(std::vector<int> const& structure, double inital_val, DataSet* asdf)
+NeuralNetwork::NeuralNetwork(std::vector<int> const& structure, double inital_val, DataSet* data_ptr)
 {
     this->structure = structure;
     this->weights.clear();
 	this->biases.clear();
-    this->data = asdf;
+    this->data = data_ptr;
 	for (int i = 1; i < structure.size(); ++i)
 	{
 		this->weights.push_back(Eigen::MatrixXd::Random(structure[i - 1], structure[i]) * inital_val);

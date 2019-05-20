@@ -17,7 +17,7 @@ public:
     std::vector<Eigen::MatrixXd> weights;
     std::vector<Eigen::VectorXd> biases;
     DataSet* data;
-    NeuralNetwork(std::vector<int> const& structure, double inital_val, DataSet* dataSet);
+    NeuralNetwork(std::vector<int> const& structure, double inital_val, DataSet* data_ptr);
     std::tuple<double, int> learn(std::string filename);
     void softmax_test(std::ostream & out = std::cout);
     Eigen::MatrixXd calc_delta(int layerNo, std::vector<Eigen::VectorXd> const & output, Eigen::MatrixXd const & prevDelta);
