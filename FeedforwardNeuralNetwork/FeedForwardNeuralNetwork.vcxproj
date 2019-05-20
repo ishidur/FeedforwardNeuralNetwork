@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClInclude Include="ActivationFunctions.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="DataSet.h" />
     <ClInclude Include="FuncApproxDataSet.h" />
     <ClInclude Include="MNISTDataSet.h" />
     <ClInclude Include="NeuralNetwork.h" />
@@ -156,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActivationFunctions.cpp" />
+    <ClCompile Include="DataSet.cpp" />
     <ClCompile Include="FuncApproxDataSet.cpp" />
     <ClCompile Include="MNISTDataSet.cpp" />
     <ClCompile Include="NeuralNetwork.cpp" />

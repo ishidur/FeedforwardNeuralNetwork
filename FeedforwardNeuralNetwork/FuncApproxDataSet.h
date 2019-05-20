@@ -1,19 +1,13 @@
 #pragma once
-
-class FuncApproxDataSet
+#include "DataSet.h"
+class FuncApproxDataSet: public DataSet
 {
 public:
 	const bool useSoftmax = false;
-	Eigen::MatrixXd dataSet;
-	Eigen::MatrixXd teachSet;
-	Eigen::MatrixXd testDataSet;
-	Eigen::MatrixXd testTeachSet;
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-	FuncApproxDataSet();
 	/**
 	 * \brief create dataset
 	 */
-	void load();
+	void load() override;
 	/**
 	 * \brief visualize
 	 */

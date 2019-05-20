@@ -8,6 +8,7 @@
 #include <ppl.h>
 #include <tuple>
 #include "config.h"
+#include "DataSet.h"
 
 class NeuralNetwork
 {
@@ -15,8 +16,8 @@ public:
     std::vector<int> structure;
     std::vector<Eigen::MatrixXd> weights;
     std::vector<Eigen::VectorXd> biases;
-    auto dataSet;
-    NeuralNetwork(std::vector<int> const& structure, double inital_val, auto const& dataSet);
+    DataSet* data;
+    NeuralNetwork(std::vector<int> const& structure, double inital_val, DataSet* asdf);
     std::tuple<double, int> learn(std::string filename);
     void softmax_test(std::ostream & out = std::cout);
     Eigen::MatrixXd calc_delta(int layerNo, std::vector<Eigen::VectorXd> const & output, Eigen::MatrixXd const & prevDelta);

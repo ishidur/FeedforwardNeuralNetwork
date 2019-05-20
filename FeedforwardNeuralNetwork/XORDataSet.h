@@ -1,16 +1,12 @@
 #pragma once
-class XORDataSet
+#include "DataSet.h"
+
+class XORDataSet: public DataSet
 {
 public:
-	bool useSoftmax = false;
-	Eigen::MatrixXd dataSet;
-	Eigen::MatrixXd teachSet;
-	Eigen::MatrixXd testDataSet;
-	Eigen::MatrixXd testTeachSet;
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-	XORDataSet();
+	const bool useSoftmax = false;
 	/**
 	 * \brief create dataset
 	 */
-	void load();
+	void load() override;
 };

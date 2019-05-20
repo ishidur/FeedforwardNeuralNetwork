@@ -13,14 +13,14 @@
 #include <tuple>
 #include <vector>
 
-#include "config.h"
 #include "NeuralNetwork.h"
-using namespace XORConfig;
+#include "config.h"
+#include "DataSet.h"
 
 
 int main()
 {
-	dataSet.load();
+    data_set->load();
 	//	if (typeid(dataSet) == typeid(FuncApproxDataSet))
 	//	{
 	//		dataSet.show();
@@ -63,7 +63,7 @@ int main()
                 std::cout << fileName << std::endl;
 				double err;
 				int n;
-                NeuralNetwork network = NeuralNetwork(structure, init_val, dataSet);
+                NeuralNetwork network = NeuralNetwork(structure, init_val, data_set);
                 
 	            if (needPretrain)
 	            {
@@ -72,7 +72,7 @@ int main()
 		            network.pretrain(preofs);
 		            preofs.close();
 	            }
-                std::tie(err, n) = network.learn(fileName, dataSet);
+                std::tie(err, n) = network.learn(fileName);
 				ofs2 << "error," << err << ",,learning time," << n << std::endl;
                 std::cout << "error; " << err << std::endl;
 				if (err < ERROR_BOTTOM) { correct++; }

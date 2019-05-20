@@ -2,22 +2,18 @@
 #include "XORDataSet.h"
 
 
-XORDataSet::XORDataSet()
-{
-}
-
 void XORDataSet::load()
 {
-	dataSet.resize(4, 2);
-	teachSet.resize(4, 1);
-	dataSet << 0, 0,
+	this->inputSet.resize(4, 2);
+	this->teachSet.resize(4, 1);
+	this->inputSet << 0, 0,
 		0, 1,
 		1, 0,
 		1, 1;
-	teachSet << 0,
+	this->teachSet << 0,
 		1,
 		1,
 		0;
-	testDataSet = dataSet;
-	testTeachSet = teachSet;
+	this->testInputSet = this->inputSet;
+	this->testTeachSet = this->teachSet;
 }

@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "NeuralNetwork.h"
+#include "MNISTDataSet.h"
 #include <numeric>
 
-NeuralNetwork::NeuralNetwork(std::vector<int> const& structure, double inital_val, auto const& dataSet)
+NeuralNetwork::NeuralNetwork(std::vector<int> const& structure, double inital_val, DataSet* asdf)
 {
-    this->dataSet = dataSet;
     this->structure = structure;
     this->weights.clear();
 	this->biases.clear();
+    this->data = asdf;
 	for (int i = 1; i < structure.size(); ++i)
 	{
 		this->weights.push_back(Eigen::MatrixXd::Random(structure[i - 1], structure[i]) * inital_val);
@@ -42,7 +43,7 @@ std::tuple<double, int> NeuralNetwork::learn(std::string filename)
 	int s = 0;
     std::string progress = "";
 	int times = LEARNING_TIME;
-    std::vector<int> ns(dataSet.dataSet.rows());
+    std::vector<int> ns(this->data->inputSet.rows());
 	const int c = ns.size() * SLIDE;
 	for (int i = 0; i < LEARNING_TIME; ++i)
 		//	for (int i = 0; i < LEARNING_TIME; ++i)
@@ -61,8 +62,8 @@ std::tuple<double, int> NeuralNetwork::learn(std::string filename)
 			double status = double((s) * 100.0 / (ns.size() * LEARNING_TIME));
 			if (progress.size() < int(status) / 5) { progress += "#"; }
 
-            Eigen::VectorXd input = dataSet.dataSet.row(n);
-            Eigen::VectorXd teach = dataSet.teachSet.row(n);
+            Eigen::VectorXd input = this->data->inputSet.row(n);
+            Eigen::VectorXd teach = this->data->teachSet.row(n);
 			if (s % c == 0)
 			{
 				ofs << i << ",";
@@ -81,10 +82,10 @@ std::tuple<double, int> NeuralNetwork::learn(std::string filename)
 	}
 learn_end:
 	//	ofs << "middleData" << endl;
-	//	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
+	//	for (int i = 0; i < dataSet->testDataSet.rows(); ++i)
 	//	{
 	//		//	feedforward proccess
-	//		Eigen::VectorXd output = dataSet.testDataSet.row(i).transpose();
+	//		Eigen::VectorXd output = dataSet->testDataSet.row(i).transpose();
 	//		for (int j = 0; j < structure.size() - 2; j++)
 	//		{
 	//			Eigen::VectorXd inputs = (output.transpose() * weights[j] + biases[j].transpose());
@@ -103,7 +104,7 @@ learn_end:
 	//		ofs << endl;
 	//	}
 	ofs.close();
-	if (dataSet.useSoftmax)
+	if (this->data->useSoftmax)
 	{
         std::ofstream ofs2(filename + "-test" + ".csv");
 		this->softmax_test(ofs2);
@@ -119,11 +120,11 @@ void NeuralNetwork::softmax_test(std::ostream& out)
 {
 	int correct[10] = {0};
 	int num[10] = {0};
-	for (int i = 0; i < dataSet.testDataSet.rows(); ++i)
+	for (int i = 0; i < this->data->testInputSet.rows(); ++i)
 	{
 		//	feedforward proccess
         std::vector<Eigen::VectorXd> outputs;
-		outputs.push_back(dataSet.testDataSet.row(i).transpose());
+		outputs.push_back(this->data->testInputSet.row(i).transpose());
 
 		for (int j = 0; j < this->structure.size() - 1; j++)
 		{
@@ -138,11 +139,11 @@ void NeuralNetwork::softmax_test(std::ostream& out)
         Eigen::VectorXd::Map(&y[0], outputs[this->structure.size() - 1].size()) = outputs[this->structure.size() - 1];
         std::vector<double>::iterator result = max_element(y.begin(), y.end());
         std::vector<double> t;
-		t.resize(dataSet.testTeachSet.row(i).size());
-        Eigen::VectorXd::Map(&t[0], dataSet.testTeachSet.row(i).size()) = dataSet.testTeachSet.row(i);
+		t.resize(this->data->testTeachSet.row(i).size());
+        Eigen::VectorXd::Map(&t[0], this->data->testTeachSet.row(i).size()) = this->data->testTeachSet.row(i);
         std::vector<double>::iterator teach = max_element(t.begin(), t.end());
 		//		out << "input, " << std::endl;
-		//		out << dataSet.testDataSet.row(i) << std::endl;
+		//		out << this->dataSet.testDataSet.row(i) << std::endl;
 		if (i == 0)
 		{
 			out << outputs[this->structure.size() - 1].transpose() << std::endl;
@@ -160,10 +161,10 @@ void NeuralNetwork::softmax_test(std::ostream& out)
 auto squared = [](const double x) { return x * x; };
 auto cross = [](const double x) { return log(x); };
 
-double error_func(Eigen::VectorXd const& outData, Eigen::VectorXd const& teachData)
+double error_func(Eigen::VectorXd const& outData, Eigen::VectorXd const& teachData, DataSet* dataSet)
 {
 	double error;
-	if (dataSet.useSoftmax)
+	if (dataSet->useSoftmax)
 	{
 		//		Cross Entropy
         Eigen::VectorXd v1 = outData.unaryExpr(cross);
@@ -206,14 +207,14 @@ void NeuralNetwork::back_propagation(std::vector<Eigen::VectorXd> const& output,
 double NeuralNetwork::validate()
 {
 	double error = 0.0;
-    Eigen::VectorXd outs = Eigen::VectorXd::Zero(dataSet.testDataSet.rows());
+    Eigen::VectorXd outs = Eigen::VectorXd::Zero(this->data->testInputSet.rows());
     std::mutex mtx;
 
-	Concurrency::parallel_for<int>(0, dataSet.testDataSet.rows(), 1, [&error, &outs, &mtx, this](int i)
+	Concurrency::parallel_for<int>(0, this->data->testInputSet.rows(), 1, [&error, &outs, &mtx, this](int i)
 	{
 		//	feedforward proccess
         std::vector<Eigen::VectorXd> outputs;
-		outputs.push_back(dataSet.testDataSet.row(i).transpose());
+		outputs.push_back(this->data->testInputSet.row(i).transpose());
 
 		for (int j = 0; j < this->structure.size() - 1; j++)
 		{
@@ -226,11 +227,11 @@ double NeuralNetwork::validate()
 		mtx.lock();
 		outs[i] = outputs[this->structure.size() - 1].sum();
 		mtx.unlock();
-        Eigen::VectorXd teach = dataSet.testTeachSet.row(i);
-		error += error_func(outputs[this->structure.size() - 1], teach);
+        Eigen::VectorXd teach = this->data->testTeachSet.row(i);
+		error += error_func(outputs[this->structure.size() - 1], teach, this->data);
 	});
 
-	return error / dataSet.testDataSet.rows();
+	return error / this->data->testInputSet.rows();
 }
 
 double NeuralNetwork::learn_proccess(Eigen::VectorXd const& input, Eigen::VectorXd const& teachData,
@@ -252,14 +253,14 @@ double NeuralNetwork::learn_proccess(Eigen::VectorXd const& input, Eigen::Vector
 	this->back_propagation(outputs, teachData);
 
 
-	if (typeid(dataSet) == typeid(MNISTDataSet))
+	if (typeid(this->data) == typeid(MNISTDataSet))
 	{
-		double error = error_func(outputs[this->structure.size() - 1], teachData);
+		double error = error_func(outputs[this->structure.size() - 1], teachData, this->data);
 		return error;
 	}
 	if (&out == &std::cout)
 	{
-		double error = error_func(outputs[this->structure.size() - 1], teachData);
+		double error = error_func(outputs[this->structure.size() - 1], teachData, this->data);
 		return error;
 	}
 
@@ -301,14 +302,14 @@ void pretrainBP(std::vector<int>const & structure, std::vector<Eigen::MatrixXd>&
 }
 
 double pretrain_validate(std::vector<int>const & structure, std::vector<Eigen::MatrixXd>& AEweights, std::vector<Eigen::VectorXd>& AEbiases,
-                                        Eigen::MatrixXd& inputData)
+                                        Eigen::MatrixXd& inputData, DataSet* dataSet)
 {
 	double error = 0.0;
     Eigen::VectorXd outs = Eigen::VectorXd::Zero(inputData.rows());
     std::mutex mtx;
 
 	Concurrency::parallel_for<int>(0, inputData.rows(), 1,
-	                               [&error, &outs, &mtx, inputData, structure, AEweights, AEbiases](int i)
+	                               [&error, &outs, &mtx, inputData, structure, AEweights, AEbiases, dataSet](int i)
 	                               {
 		                               //	feedforward proccess
                                        std::vector<Eigen::VectorXd> outputs;
@@ -326,7 +327,7 @@ double pretrain_validate(std::vector<int>const & structure, std::vector<Eigen::M
 		                               mtx.lock();
 		                               outs[i] = outputs[structure.size() - 1].sum();
 		                               mtx.unlock();
-		                               error += error_func(outputs[structure.size() - 1], input);
+		                               error += error_func(outputs[structure.size() - 1], input, dataSet);
 	                               });
 	return error / inputData.rows();
 	//	return error;
@@ -353,7 +354,7 @@ void NeuralNetwork::pretrain(std::ostream& out)
 {
     std::cout << "autoencoder" << std::endl;
 	out << "autoencoder" << std::endl;
-    Eigen::MatrixXd inputData = dataSet.dataSet;
+    Eigen::MatrixXd inputData = this->data->inputSet;
     Eigen::MatrixXd middleData;
 	for (int k = 0; k < inputData.rows(); ++k)
 	{
@@ -379,7 +380,7 @@ void NeuralNetwork::pretrain(std::ostream& out)
 			{
                 Eigen::VectorXd input = inputData.row(n);
 				pretrain_proccess(AEstructure, AEweights, AEbiases, input);
-				error = pretrain_validate(AEstructure, AEweights, AEbiases, inputData);
+				error = pretrain_validate(AEstructure, AEweights, AEbiases, inputData, this->data);
                 std::cout << "error: " << error << "\r" << std::flush;
 			}
 			if (error < PRETRAIN_ERROR_BOTTOM)

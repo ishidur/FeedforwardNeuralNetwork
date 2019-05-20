@@ -4,19 +4,14 @@
 #include <fstream>
 #include <vector>
 #include <iomanip>
+#include "DataSet.h"
 
-class MNISTDataSet
+class MNISTDataSet: public DataSet
 {
 public:
-	bool useSoftmax = true;
-	Eigen::MatrixXd dataSet;
-	Eigen::MatrixXd teachSet;
-	Eigen::MatrixXd testDataSet;
-	Eigen::MatrixXd testTeachSet;
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-	MNISTDataSet();
+	const bool useSoftmax = true;
 	/**
 	 * \brief create dataset
 	 */
-	void load();
+	void load() override;
 };
