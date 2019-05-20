@@ -148,6 +148,7 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="FuncApproxDataSet.h" />
     <ClInclude Include="MNISTDataSet.h" />
+    <ClInclude Include="NeuralNetwork.h" />
     <ClInclude Include="TwoSpiralDataSet.h" />
     <ClInclude Include="XORDataSet.h" />
     <ClInclude Include="stdafx.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="ActivationFunctions.cpp" />
     <ClCompile Include="FuncApproxDataSet.cpp" />
     <ClCompile Include="MNISTDataSet.cpp" />
+    <ClCompile Include="NeuralNetwork.cpp" />
     <ClCompile Include="TwoSpiralDataSet.cpp" />
     <ClCompile Include="XORDataSet.cpp" />
     <ClCompile Include="main.cpp" />
