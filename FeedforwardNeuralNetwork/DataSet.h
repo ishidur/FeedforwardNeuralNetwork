@@ -4,8 +4,8 @@
 class DataSet
 {
 public:
-    DataSet();
-    ~DataSet() = default;
+    DataSet(){};
+    virtual ~DataSet() = default;
 	bool useSoftmax;
 	Eigen::MatrixXd inputSet;
 	Eigen::MatrixXd teachSet;

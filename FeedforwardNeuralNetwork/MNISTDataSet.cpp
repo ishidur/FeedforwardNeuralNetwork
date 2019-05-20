@@ -90,6 +90,10 @@ Eigen::MatrixXd readLabelFile(std::string filename)
 	return _label;
 }
 
+MNISTDataSet::MNISTDataSet() {
+    this->useSoftmax = true;
+}
+
 void MNISTDataSet::load()
 {
 	//	inputSet = readImageFile(TEST_IMAGE_PATH);

@@ -1,10 +1,10 @@
 #pragma once
 #include "DataSet.h"
 
-class XORDataSet: public DataSet
+class XORDataSet final : public DataSet
 {
 public:
-	const bool useSoftmax = false;
+	XORDataSet();
 	/**
 	 * \brief create dataset
 	 */

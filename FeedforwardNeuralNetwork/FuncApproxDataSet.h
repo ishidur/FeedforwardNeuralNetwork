@@ -1,9 +1,9 @@
 #pragma once
 #include "DataSet.h"
-class FuncApproxDataSet: public DataSet
+class FuncApproxDataSet final : public DataSet
 {
 public:
-	const bool useSoftmax = false;
+    FuncApproxDataSet();
 	/**
 	 * \brief create dataset
 	 */

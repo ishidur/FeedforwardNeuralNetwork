@@ -1,10 +1,10 @@
 #pragma once
 #include "DataSet.h"
 
-class TwoSpiralDataSet: public DataSet
+class TwoSpiralDataSet final : public DataSet
 {
 public:
-	const bool useSoftmax = false;
+    TwoSpiralDataSet();
 	/**
 	 * \brief create dataset
 	 */

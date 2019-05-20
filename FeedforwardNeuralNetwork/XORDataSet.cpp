@@ -2,6 +2,10 @@
 #include "XORDataSet.h"
 
 
+XORDataSet::XORDataSet() {
+    this->useSoftmax = false;
+}
+
 void XORDataSet::load()
 {
 	this->inputSet.resize(4, 2);

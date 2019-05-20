@@ -13,9 +13,9 @@
 #include <tuple>
 #include <vector>
 
-#include "NeuralNetwork.h"
 #include "config.h"
 #include "DataSet.h"
+#include "NeuralNetwork.h"
 
 
 int main()
@@ -82,5 +82,6 @@ int main()
 		}
 		ofs2.close();
 	}
+    delete data_set;
 	return 0;
 }

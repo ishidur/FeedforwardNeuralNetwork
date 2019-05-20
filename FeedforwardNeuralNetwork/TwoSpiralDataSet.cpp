@@ -8,6 +8,10 @@
 #define MAXDIAMETER 1.0
 
 
+TwoSpiralDataSet::TwoSpiralDataSet() {
+    this->useSoftmax=false;
+}
+
 void TwoSpiralDataSet::load()
 {
 	double radiusGrowth = (MAXDIAMETER / 2.0 - MINDIAMETER) / double(POINTS);

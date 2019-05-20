@@ -13,6 +13,10 @@ auto func = [](double x)
 	//	return cos(x / 2.0) * sin(8.0 * x);
 };
 
+FuncApproxDataSet::FuncApproxDataSet() {
+    this->useSoftmax = false;
+}
+
 void FuncApproxDataSet::load()
 {
 	this->inputSet.resize(TRAIN_DATA_NUM, 1);

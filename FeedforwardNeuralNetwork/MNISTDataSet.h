@@ -6,10 +6,10 @@
 #include <iomanip>
 #include "DataSet.h"
 
-class MNISTDataSet: public DataSet
+class MNISTDataSet final : public DataSet
 {
 public:
-	const bool useSoftmax = true;
+    MNISTDataSet();
 	/**
 	 * \brief create dataset
 	 */
